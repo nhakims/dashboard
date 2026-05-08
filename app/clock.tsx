@@ -749,7 +749,7 @@ export default function Clock() {
           )}
         </div>
 
-        <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="fixed bottom-4 text-[10px] tracking-[0.25em] text-white/15 hover:text-white/35 uppercase transition-colors">&copy; 2026 - Hakim Samah</a>
+        <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="fixed bottom-4 text-[10px] tracking-[0.25em] text-white/70 hover:text-white/35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
       </div>
     </>
   );
