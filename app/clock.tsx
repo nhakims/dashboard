@@ -55,6 +55,23 @@ const ZONES = [
 
 type PrayerTimes = Partial<Record<PrayerKey, string>>;
 
+type WeatherLoc = { name: string; lat: number; lon: number };
+type WeatherData = { temp: number; code: number };
+
+function getWeatherInfo(code: number): { label: string; kind: "sun" | "partly" | "cloud" | "rain" | "snow" | "storm" | "fog" } {
+  if (code === 0 || code === 1)   return { label: "Clear sky",     kind: "sun"    };
+  if (code === 2)                 return { label: "Partly cloudy", kind: "partly" };
+  if (code === 3)                 return { label: "Overcast",      kind: "cloud"  };
+  if (code === 45 || code === 48) return { label: "Foggy",         kind: "fog"    };
+  if (code >= 51 && code <= 57)   return { label: "Drizzle",       kind: "rain"   };
+  if (code >= 61 && code <= 67)   return { label: "Rain",          kind: "rain"   };
+  if (code >= 71 && code <= 77)   return { label: "Snow",          kind: "snow"   };
+  if (code >= 80 && code <= 82)   return { label: "Showers",       kind: "rain"   };
+  if (code >= 85 && code <= 86)   return { label: "Snow showers",  kind: "snow"   };
+  if (code >= 95)                 return { label: "Thunderstorm",  kind: "storm"  };
+  return { label: "—", kind: "cloud" };
+}
+
 function parseHHMM(raw: string): number {
   const [h, m, s = 0] = raw.trim().split(":").map(Number);
   return h * 3600 + m * 60 + s;
@@ -228,6 +245,190 @@ function RestConfigModal({
   );
 }
 
+function WeatherIcon({ kind, className }: { kind: string; className?: string }) {
+  const cls = `${className ?? "w-5 h-5"} text-white/50`;
+  switch (kind) {
+    case "sun":
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        </svg>
+      );
+    case "partly":
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12.5 4a4 4 0 014 3.8A3 3 0 1117 14H8a4 4 0 01-.5-7.97A4 4 0 0112.5 4z" />
+          <circle cx="7" cy="8.5" r="2.5" />
+          <path strokeLinecap="round" d="M7 3v1M7 14v1M2 8.5h1M12 8.5h1" />
+        </svg>
+      );
+    case "rain":
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 17a4 4 0 010-8 4.5 4.5 0 018.93-1A3.5 3.5 0 1120.5 17H6z" />
+          <path strokeLinecap="round" d="M8 20l-1 2M12 20l-1 2M16 20l-1 2" />
+        </svg>
+      );
+    case "snow":
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 17a4 4 0 010-8 4.5 4.5 0 018.93-1A3.5 3.5 0 1120.5 17H6z" />
+          <path strokeLinecap="round" d="M8 21v2M12 21v2M16 21v2M7 22l2-1M7 22l2 1M11 22l2-1M11 22l2 1M15 22l2-1M15 22l2 1" />
+        </svg>
+      );
+    case "storm":
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 17a4 4 0 010-8 4.5 4.5 0 018.93-1A3.5 3.5 0 1120.5 17H6z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 14l-2 3h3l-2 3" />
+        </svg>
+      );
+    case "fog":
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" d="M3 12h18M5 16h14M7 8h10" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 17a4 4 0 010-8 4.5 4.5 0 018.93-1A3.5 3.5 0 1120.5 17H6z" />
+        </svg>
+      );
+  }
+}
+
+type GeoResult = { name: string; country: string; admin1?: string; latitude: number; longitude: number };
+
+function LocationPickerModal({
+  current,
+  onSave,
+  onClose,
+}: {
+  current: WeatherLoc | null;
+  onSave: (loc: WeatherLoc) => void;
+  onClose: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<WeatherLoc[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.trim().length < 2) { setResults([]); return; }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const r = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=en&format=json`
+        );
+        const d = await r.json();
+        setResults(
+          (d.results ?? []).map((x: GeoResult) => ({
+            name: [x.name, x.admin1, x.country].filter(Boolean).join(", "),
+            lat: x.latitude,
+            lon: x.longitude,
+          }))
+        );
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+  }, [query]);
+
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        onSave({ name: "My Location", lat: pos.coords.latitude, lon: pos.coords.longitude });
+        setGeoLoading(false);
+        onClose();
+      },
+      () => setGeoLoading(false)
+    );
+  };
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Weather Location</p>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+
+        <button
+          onClick={useCurrentLocation}
+          disabled={geoLoading}
+          className="flex items-center gap-3 px-5 py-3 border-b border-white/5 text-left hover:bg-white/5 transition-colors w-full"
+        >
+          <svg className="w-4 h-4 text-white/35 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path strokeLinecap="round" d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+          </svg>
+          <span className="text-xs tracking-[0.2em] text-white/45 uppercase">
+            {geoLoading ? "Locating…" : "Use current location"}
+          </span>
+        </button>
+
+        <div className="px-5 py-3 border-b border-white/5">
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search city…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full bg-transparent text-sm text-white/70 placeholder-white/20 outline-none tracking-wider"
+          />
+        </div>
+
+        <div className="overflow-y-auto max-h-60">
+          {searching && <p className="px-5 py-3 text-xs text-white/25 tracking-widest">Searching…</p>}
+          {!searching && results.map((loc, i) => (
+            <button
+              key={i}
+              onClick={() => { onSave(loc); onClose(); }}
+              className={`w-full text-left px-5 py-3 text-xs tracking-[0.15em] hover:bg-white/5 transition-colors ${
+                current?.lat === loc.lat && current?.lon === loc.lon
+                  ? "bg-white/8 text-white"
+                  : "text-white/50"
+              }`}
+            >
+              {loc.name}
+            </button>
+          ))}
+          {!searching && query.trim().length >= 2 && results.length === 0 && (
+            <p className="px-5 py-3 text-xs text-white/25">No results.</p>
+          )}
+        </div>
+
+        <div className="px-5 py-4 border-t border-white/5">
+          <button
+            onClick={onClose}
+            className="w-full py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Clock() {
   const [time, setTime] = useState<Date | null>(null);
   const [zone, setZone] = useState("WLY01");
@@ -242,6 +443,9 @@ export default function Clock() {
   const [restStart, setRestStart] = useState("08:30");
   const [restInterval, setRestInterval] = useState(60);
   const [showRestConfig, setShowRestConfig] = useState(false);
+  const [weatherLoc, setWeatherLoc] = useState<WeatherLoc | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [showLocPicker, setShowLocPicker] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("solat-zone");
@@ -249,6 +453,8 @@ export default function Clock() {
     setNote(localStorage.getItem("clock-note") ?? "");
     setRestStart(localStorage.getItem("rest-start") ?? "08:30");
     setRestInterval(parseInt(localStorage.getItem("rest-interval") ?? "60"));
+    const savedLoc = localStorage.getItem("weather-loc");
+    if (savedLoc) setWeatherLoc(JSON.parse(savedLoc));
   }, []);
 
   const saveRestConfig = (start: string, interval: number) => {
@@ -312,6 +518,31 @@ export default function Clock() {
       })
       .catch(() => setPrayers(null));
   }, [zone]);
+
+  useEffect(() => {
+    if (!weatherLoc) return;
+    const fetchWeather = () => {
+      fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${weatherLoc.lat}&longitude=${weatherLoc.lon}&current=temperature_2m,weather_code&temperature_unit=celsius`
+      )
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.current) {
+            setWeatherData({ temp: Math.round(d.current.temperature_2m), code: d.current.weather_code });
+          }
+        })
+        .catch(() => {});
+    };
+    fetchWeather();
+    const id = setInterval(fetchWeather, 10 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [weatherLoc]);
+
+  const saveWeatherLoc = (loc: WeatherLoc) => {
+    setWeatherLoc(loc);
+    setWeatherData(null);
+    localStorage.setItem("weather-loc", JSON.stringify(loc));
+  };
 
   const saveZone = (z: string) => {
     setZone(z);
@@ -382,8 +613,40 @@ export default function Clock() {
           onClose={() => setShowRestConfig(false)}
         />
       )}
+      {showLocPicker && (
+        <LocationPickerModal
+          current={weatherLoc}
+          onSave={saveWeatherLoc}
+          onClose={() => setShowLocPicker(false)}
+        />
+      )}
 
       <div className="flex flex-col items-center gap-4 select-none">
+        {/* Weather */}
+        <div className="flex items-center gap-3 h-8">
+          {weatherData && weatherLoc ? (
+            <>
+              <WeatherIcon kind={getWeatherInfo(weatherData.code).kind} className="w-5 h-5" />
+              <span className="text-2xl font-light text-white/75 tabular-nums leading-none">{weatherData.temp}°</span>
+              <span className="text-[11px] tracking-[0.25em] text-white/35 uppercase">{getWeatherInfo(weatherData.code).label}</span>
+              <span className="text-white/10 text-xs">·</span>
+              <button
+                onClick={() => setShowLocPicker(true)}
+                className="text-[11px] tracking-[0.15em] text-white/25 hover:text-white/50 transition-colors uppercase"
+              >
+                {weatherLoc.name}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowLocPicker(true)}
+              className="text-[11px] tracking-[0.25em] text-white/20 hover:text-white/35 transition-colors uppercase"
+            >
+              + Set weather location
+            </button>
+          )}
+        </div>
+
         {/* Time */}
         <div className="flex items-baseline tabular-nums">
           {`${hours}:${minutes}:${seconds}`.split("").map((char, i) => (
@@ -471,16 +734,22 @@ export default function Clock() {
             </svg>
           </button>
           {noteOpen && (
-            <textarea
-              id="note"
-              value={note}
-              rows={note.split("\n").length + 1}
-              onChange={(e) => { setNote(e.target.value); localStorage.setItem("clock-note", e.target.value); }}
-              placeholder=""
-              className="w-full resize-none bg-white/1 text-left text-[12px] text-white/40 placeholder-white/15 outline-none border-2 border-white/15 focus:border-white/50 transition-colors rounded-lg p-3 leading-relaxed"
-            />
+            <div className="absolute left-1/2 -translate-x-1/2 z-40 pt-2 w-[50vw]">
+              <textarea
+                id="note"
+                autoFocus
+                value={note}
+                rows={Math.max(3, note.split("\n").length + 1)}
+                onChange={(e) => { setNote(e.target.value); localStorage.setItem("clock-note", e.target.value); }}
+                placeholder=""
+                style={{ letterSpacing: "0.1em" }}
+                className="w-full resize-none bg-transparent text-left text-[12px] text-white/40 placeholder-white/15 outline-none border-2 border-white/15 focus:border-white/50 transition-colors rounded-lg p-3 leading-relaxed shadow-2xl"
+              />
+            </div>
           )}
         </div>
+
+        <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="fixed bottom-4 text-[10px] tracking-[0.25em] text-white/15 hover:text-white/35 uppercase transition-colors">&copy; 2026 - Hakim Samah</a>
       </div>
     </>
   );
