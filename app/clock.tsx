@@ -441,7 +441,7 @@ const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
     <div className="flex flex-col items-center gap-3">
-      <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">{label}</label>
+      {label && <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">{label}</label>}
       <div className="flex gap-2 flex-wrap justify-center">
         {presets.map((c) => (
           <button key={c} onClick={() => onChange(c)} style={{ background: c }}
@@ -461,6 +461,8 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [fontColor, setFontColor] = useState(config.fontColor ?? "#ffffff");
   const [showQuran, setShowQuran] = useState(config.showQuran ?? true);
   const [showDailyQuote, setShowDailyQuote] = useState(config.showDailyQuote ?? false);
+  const [openBg, setOpenBg] = useState(false);
+  const [openFont, setOpenFont] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -477,48 +479,74 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
       className="fixed inset-0 z-50 flex items-start justify-end p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-10 max-h-[calc(100vh-5rem)]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-2 sm:mt-10 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-5rem)]">
+        <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/5">
           <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Appearance</p>
           <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex flex-col gap-6 px-5 py-6 overflow-y-auto">
-          <ColorSection
-            label="Background"
-            value={color}
-            onChange={setColor}
-            presets={["#0a0a0a", "#0f172a", "#0d1117", "#1a0a2e", "#0a1628", "#1a1a0a"]}
-          />
+        <div className="flex flex-col overflow-y-auto min-h-0">
+          {/* Background accordion */}
+          <button
+            onClick={() => setOpenBg((v) => !v)}
+            className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 rounded-md border border-white/10 shrink-0" style={{ background: color }} />
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Background</p>
+            </div>
+            <svg className={`w-3.5 h-3.5 text-white/20 transition-transform ${openBg ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          {openBg && (
+            <div className="px-5 pb-5">
+              <ColorSection label="" value={color} onChange={setColor} presets={["#0a0a0a", "#0f172a", "#0d1117", "#1a0a2e", "#0a1628", "#1a1a0a"]} />
+            </div>
+          )}
+
           <div className="border-t border-white/5" />
-          <ColorSection
-            label="Text"
-            value={fontColor}
-            onChange={setFontColor}
-            presets={["#ffffff", "#fef3c7", "#bfdbfe", "#bbf7d0", "#fecdd3", "#e9d5ff"]}
-          />
+
+          {/* Font color accordion */}
+          <button
+            onClick={() => setOpenFont((v) => !v)}
+            className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 rounded-md border border-white/10 shrink-0" style={{ background: fontColor }} />
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Text</p>
+            </div>
+            <svg className={`w-3.5 h-3.5 text-white/20 transition-transform ${openFont ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          {openFont && (
+            <div className="px-5 pb-5">
+              <ColorSection label="" value={fontColor} onChange={setFontColor} presets={["#ffffff", "#fef3c7", "#bfdbfe", "#bbf7d0", "#fecdd3", "#e9d5ff"]} />
+            </div>
+          )}
+
           <div className="border-t border-white/5" />
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Show Quran</p>
-            <button
-              onClick={() => setShowQuran((v) => !v)}
-              className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-            </button>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quote</p>
-            <button
-              onClick={() => setShowDailyQuote((v) => !v)}
-              className={`w-10 h-5 rounded-full transition-colors relative ${showDailyQuote ? "bg-white/30" : "bg-white/10"}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDailyQuote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-            </button>
+
+          <div className="flex flex-col gap-4 px-5 py-4">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Show Quran</p>
+              <button
+                onClick={() => setShowQuran((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quote</p>
+              <button
+                onClick={() => setShowDailyQuote((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showDailyQuote ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDailyQuote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+        <div className="shrink-0 flex gap-2 px-5 py-4 border-t border-white/5">
           <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
           <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">Save</button>
         </div>
@@ -573,6 +601,35 @@ function ListItemModal({
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
           <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] fc-30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
           <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] fc bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">{isEdit ? "Save" : "Add"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuoteModal({ quote, onClose }: { quote: { q: string; a: string }; onClose: () => void }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-sm bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">Daily Quote</p>
+          <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
+        </div>
+        <div className="px-6 py-6 flex flex-col gap-4">
+          <p className="text-sm fc-80 leading-relaxed tracking-wide">&ldquo;{quote.q}&rdquo;</p>
+          <p className="text-[11px] fc-35 tracking-[0.2em] uppercase text-right">&mdash; {quote.a}</p>
         </div>
       </div>
     </div>
@@ -664,6 +721,7 @@ export default function Clock() {
   const [verseData, setVerseData] = useState<{ surah: { englishName: string; englishNameTranslation: string; revelationType: string }; numberInSurah: number; text: string } | null>(null);
   const [verseLoading, setVerseLoading] = useState(false);
   const [dailyQuote, setDailyQuote] = useState<{ q: string; a: string } | null>(null);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [userIp, setUserIp] = useState<string | null>(null);
 
   useEffect(() => {
@@ -930,6 +988,9 @@ export default function Clock() {
           onClose={() => setShowVerseModal(false)}
         />
       )}
+      {showQuoteModal && dailyQuote && (
+        <QuoteModal quote={dailyQuote} onClose={() => setShowQuoteModal(false)} />
+      )}
 
       {/* Top bar */}
       <div className="flex items-center gap-3 w-full pt-4 px-4">
@@ -944,9 +1005,11 @@ export default function Clock() {
             </span>
           </button>
         ) : (bgConfig.showDailyQuote && dailyQuote) ? (
-          <p className="min-w-0 truncate text-[11px] fc-70 tracking-[0.1em]">
-            &ldquo;{dailyQuote.q}&rdquo;<span className="fc-25"> &mdash; {dailyQuote.a}</span>
-          </p>
+          <button onClick={() => setShowQuoteModal(true)} className="min-w-0 text-left max-w-[75vw]">
+            <span className="block truncate text-[11px] fc-70 tracking-[0.1em]">
+              &ldquo;{dailyQuote.q}&rdquo;<span className="fc-25"> &mdash; {dailyQuote.a}</span>
+            </span>
+          </button>
         ) : null}
         <button
           onClick={() => setShowBgSettings(true)}
@@ -961,12 +1024,11 @@ export default function Clock() {
       </div>
 
       {bgConfig.showQuran !== false && bgConfig.showDailyQuote && dailyQuote && (
-        <div className="w-full pl-4 pb-1">
-          <p className="text-[11px] fc-70 tracking-[0.1em] text-left">
-            &ldquo;{dailyQuote.q}&rdquo;
-            <span className="fc-25"> &mdash; {dailyQuote.a}</span>
-          </p>
-        </div>
+        <button onClick={() => setShowQuoteModal(true)} className="w-full pl-4 pb-1 text-left">
+          <span className="block truncate text-[11px] fc-70 tracking-[0.1em]">
+            &ldquo;{dailyQuote.q}&rdquo;<span className="fc-25"> &mdash; {dailyQuote.a}</span>
+          </span>
+        </button>
       )}
 
       <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
