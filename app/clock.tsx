@@ -1,6 +1,8 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { deleteMediaFile, getMediaFile, saveMediaFile } from "./lib/media-db";
 
 function AlertDot({ onClear }: { onClear: () => void }) {
   return (
@@ -452,10 +454,12 @@ type BgConfig = {
   showWeather: boolean;
   showCopyright: boolean;
   showNote: boolean;
+  showPlayer: boolean;
+  showQuranPlayer: boolean;
   fontFamily: FontId;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: true, showCopyright: true, showNote: true, fontFamily: "montserrat" };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, fontFamily: "montserrat" };
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -483,6 +487,8 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [showWeather, setShowWeather] = useState(config.showWeather ?? true);
   const [showCopyright, setShowCopyright] = useState(config.showCopyright ?? true);
   const [showNote, setShowNote] = useState(config.showNote ?? true);
+  const [showPlayer, setShowPlayer] = useState(config.showPlayer ?? true);
+  const [showQuranPlayer, setShowQuranPlayer] = useState(config.showQuranPlayer ?? true);
   const [fontFamily, setFontFamily] = useState<FontId>(config.fontFamily ?? "montserrat");
   const [openBg, setOpenBg] = useState(false);
   const [openFont, setOpenFont] = useState(false);
@@ -495,7 +501,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, fontFamily }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, fontFamily }); onClose(); };
 
   return (
     <div
@@ -620,6 +626,24 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                 className={`w-10 h-5 rounded-full transition-colors relative ${showNote ? "bg-white/30" : "bg-white/10"}`}
               >
                 <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showNote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Media Player</p>
+              <button
+                onClick={() => setShowPlayer((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showPlayer ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quran Player</p>
+              <button
+                onClick={() => setShowQuranPlayer((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showQuranPlayer ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuranPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
               </button>
             </div>
           </div>
@@ -772,11 +796,374 @@ function VerseModal({
   );
 }
 
-export default function Clock() {
+function MediaModal({
+  tracks,
+  currentTrackId,
+  isPlaying,
+  progress,
+  duration,
+  volume,
+  onPlayToggle,
+  onTrackSelect,
+  onUpload,
+  onDelete,
+  onSeek,
+  onVolumeChange,
+  onClose,
+}: {
+  tracks: { id: string; name: string }[];
+  currentTrackId: string | null;
+  isPlaying: boolean;
+  progress: number;
+  duration: number;
+  volume: number;
+  onPlayToggle: () => void;
+  onTrackSelect: (id: string) => void;
+  onUpload: (file: File) => void;
+  onDelete: (id: string) => void;
+  onSeek: (val: number) => void;
+  onVolumeChange: (val: number) => void;
+  onClose: () => void;
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showVolume, setShowVolume] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${String(sec).padStart(2, "0")}`;
+  };
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <div>
+            <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Media Library</p>
+            <p className="text-[10px] tracking-[0.2em] text-white/25 mt-0.5">Browser Storage · Offline Playback</p>
+          </div>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+
+        {/* Player Controls */}
+        <div className="px-6 py-8 flex flex-col items-center gap-6 border-b border-white/5 bg-white/[0.02]">
+          <div className="text-center w-full">
+            <p className="text-sm font-medium fc-80 truncate px-4">
+              {tracks.find(t => t.id === currentTrackId)?.name || "No track selected"}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-8">
+            <button
+              onClick={onPlayToggle}
+              disabled={!currentTrackId || tracks.length === 0}
+              className="w-14 h-14 flex items-center justify-center bg-[#3a3a3a] hover:bg-[#4a4a4a] disabled:bg-[#2a2a2a] disabled:opacity-50 disabled:cursor-not-allowed border border-white/8 rounded-lg transition-all group"
+            >
+              {isPlaying ? (
+                <svg className="w-6 h-6 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              ) : (
+                <svg className="w-6 h-6 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              )}
+            </button>
+          </div>
+
+          <div className="w-full flex flex-col gap-3">
+            <div className="flex justify-between text-[10px] fc-30 tracking-[0.2em] tabular-nums uppercase">
+              <span>{formatTime(progress)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+            <div 
+              className="group/progress relative w-full h-[6px] bg-white/10 cursor-pointer overflow-hidden rounded-full"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const pct = x / rect.width;
+                onSeek(pct * duration);
+              }}
+            >
+              <div 
+                className="absolute top-0 left-0 h-full bg-white/70 transition-all duration-300 ease-out group-hover/progress:bg-white/90 rounded-full"
+                style={{ width: `${(progress / (duration || 1)) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="w-full flex items-center gap-4">
+            <button 
+              onClick={() => setShowVolume(!showVolume)}
+              className={`p-1 transition-colors ${showVolume ? "fc-80" : "fc-30 hover:fc-60"}`}
+              title="Toggle volume"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+              </svg>
+            </button>
+            {showVolume && (
+              <div 
+                className="group/volume relative flex-1 h-[4px] bg-white/10 cursor-pointer overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300 rounded-full"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const pct = Math.max(0, Math.min(1, x / rect.width));
+                  onVolumeChange(pct);
+                }}
+              >
+                <div 
+                  className="absolute top-0 left-0 h-full bg-white/40 transition-all duration-300 ease-out group-hover/volume:bg-white/60 rounded-full"
+                  style={{ width: `${volume * 100}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Tracks List */}
+        <div className="flex-1 overflow-y-auto min-h-[200px] scrollbar-thin">
+          <div className="p-4 flex flex-col gap-1">
+            {tracks.map((track) => (
+              <div 
+                key={track.id} 
+                className={`flex items-center justify-between p-3 rounded-lg transition-colors group ${track.id === currentTrackId ? "bg-white/10" : "hover:bg-white/5"}`}
+              >
+                <button 
+                  onClick={() => onTrackSelect(track.id)}
+                  className="flex-1 text-left min-w-0"
+                >
+                  <p className={`text-xs tracking-wide truncate ${track.id === currentTrackId ? "fc-90" : "fc-50"}`}>
+                    {track.name}
+                  </p>
+                </button>
+                <button 
+                  onClick={() => onDelete(track.id)}
+                  className="opacity-0 group-hover:opacity-100 fc-20 hover:fc-60 transition-all p-1"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            ))}
+            {tracks.length === 0 && (
+              <p className="text-center py-8 text-[11px] fc-25 tracking-[0.2em] uppercase">No files found</p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+          <input 
+            type="file" accept="audio/*" ref={fileInputRef} className="hidden" 
+            onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} 
+          />
+          <button 
+            onClick={onClose} 
+            className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+          >
+            Close
+          </button>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
+          >
+            Upload Audio
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuranPlayerModal({
+  surahs,
+  currentSurah,
+  currentAyahIndex,
+  isPlaying,
+  volume,
+  onPlayToggle,
+  onSurahSelect,
+  onVolumeChange,
+  onClose,
+}: {
+  surahs: { number: number; name: string; englishName: string }[];
+  currentSurah: { number: number; name: string; englishName: string; ayahs: { audio: string }[] } | null;
+  currentAyahIndex: number;
+  isPlaying: boolean;
+  volume: number;
+  onPlayToggle: () => void;
+  onSurahSelect: (num: number) => void;
+  onVolumeChange: (val: number) => void;
+  onClose: () => void;
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const [filter, setFilter] = useState("");
+  const [showVolume, setShowVolume] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const filtered = surahs.filter(
+    (s) =>
+      s.englishName.toLowerCase().includes(filter.toLowerCase()) ||
+      s.name.includes(filter) ||
+      s.number.toString().includes(filter)
+  );
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <div>
+            <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Quran Player</p>
+            <p className="text-[10px] tracking-[0.2em] text-white/25 mt-0.5">Streaming · Mishary Rashid Alafasy</p>
+          </div>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+
+        {/* Player Controls */}
+        <div className="px-6 py-8 flex flex-col items-center gap-6 border-b border-white/5 bg-white/[0.02]">
+          <div className="text-center w-full">
+            <p className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-1">
+              {currentSurah ? `Surah ${currentSurah.number}` : "Select a Surah"}
+            </p>
+            {currentSurah ? (
+              <>
+                <p className="text-2xl fc-90 tracking-wide" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                  {currentSurah.name}
+                </p>
+                <p className="text-xs fc-50 tracking-[0.15em] mt-1">{currentSurah.englishName}</p>
+              </>
+            ) : (
+              <p className="text-sm fc-30">—</p>
+            )}
+            {currentSurah && (
+              <p className="text-[10px] tracking-[0.1em] text-white/20 mt-2 uppercase">
+                Verse {currentAyahIndex + 1} of {currentSurah.ayahs.length}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-8">
+            <button
+              onClick={onPlayToggle}
+              className="w-14 h-14 flex items-center justify-center bg-[#3a3a3a] hover:bg-[#4a4a4a] border border-white/8 rounded-lg transition-all group"
+            >
+              {isPlaying ? (
+                <svg className="w-6 h-6 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              ) : (
+                <svg className="w-6 h-6 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              )}
+            </button>
+          </div>
+
+          <div className="w-full flex items-center gap-4">
+            <button 
+              onClick={() => setShowVolume(!showVolume)}
+              className={`p-1 transition-colors ${showVolume ? "fc-80" : "fc-30 hover:fc-60"}`}
+              title="Toggle volume"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+              </svg>
+            </button>
+            {showVolume && (
+              <div 
+                className="group/volume relative flex-1 h-[4px] bg-white/10 cursor-pointer overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300 rounded-full"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const pct = Math.max(0, Math.min(1, x / rect.width));
+                  onVolumeChange(pct);
+                }}
+              >
+                <div 
+                  className="absolute top-0 left-0 h-full bg-white/40 transition-all duration-300 ease-out group-hover/volume:bg-white/60 rounded-full"
+                  style={{ width: `${volume * 100}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="px-5 py-3 border-b border-white/5">
+          <input
+            type="text"
+            placeholder="Search surah..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="w-full bg-transparent text-sm fc-70 placeholder-white/20 outline-none tracking-wider"
+          />
+        </div>
+
+        {/* Surah List */}
+        <div className="flex-1 overflow-y-auto min-h-[200px] scrollbar-thin">
+          <div className="p-4 flex flex-col gap-1">
+            {filtered.map((s) => (
+              <button 
+                key={s.number} 
+                onClick={() => onSurahSelect(s.number)}
+                className={`flex items-center justify-between p-3 rounded-lg transition-colors group ${s.number === currentSurah?.number ? "bg-white/10" : "hover:bg-white/5"}`}
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <span className="text-[10px] fc-25 tabular-nums w-4">{s.number}</span>
+                  <div className="text-left min-w-0">
+                    <p className={`text-xs tracking-wide truncate ${s.number === currentSurah?.number ? "fc-90" : "fc-50"}`}>
+                      {s.englishName}
+                    </p>
+                  </div>
+                </div>
+                <span className={`text-sm ${s.number === currentSurah?.number ? "fc-80" : "fc-25"}`} dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                  {s.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+          <button 
+            onClick={onClose} 
+            className="w-full py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClockFace({
+  prayers,
+  restStart,
+  restInterval,
+  zone,
+  onRestConfigOpen,
+  onZonePickerOpen,
+}: {
+  prayers: PrayerTimes | null;
+  restStart: string;
+  restInterval: number;
+  zone: string;
+  onRestConfigOpen: () => void;
+  onZonePickerOpen: () => void;
+}) {
   const [time, setTime] = useState<Date | null>(null);
-  const [zone, setZone] = useState("WLY01");
-  const [prayers, setPrayers] = useState<PrayerTimes | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
   const [restAlert, setRestAlert] = useState(false);
   const [prayerAlert, setPrayerAlert] = useState(false);
   const [lockedRestTime, setLockedRestTime] = useState<string | null>(null);
@@ -785,6 +1172,124 @@ export default function Clock() {
   const alertedPrayer = useRef("");
   const restAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prayerAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setTime(new Date());
+    const id = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (!time) return;
+    const currentHHMM = `${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`;
+    {
+      const [sH, sM] = restStart.split(":").map(Number);
+      const nowMins = time.getHours() * 60 + time.getMinutes();
+      const startMins = sH * 60 + sM;
+      const distMins = ((nowMins - startMins) % (24 * 60) + 24 * 60) % (24 * 60);
+      if (distMins % restInterval === 0 && alertedRestHour.current !== currentHHMM) {
+        alertedRestHour.current = currentHHMM;
+        setLockedRestTime(currentHHMM);
+        setRestAlert(true);
+        if (restAlertTimer.current) clearTimeout(restAlertTimer.current);
+        restAlertTimer.current = setTimeout(() => { setRestAlert(false); setLockedRestTime(null); }, 5 * 60 * 1000);
+      }
+    }
+    if (prayers) {
+      const hit = PRAYER_KEYS.find((k) => {
+        if (!prayers[k]) return false;
+        const [h, m] = prayers[k]!.split(":").map(Number);
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}` === currentHHMM;
+      });
+      if (hit && alertedPrayer.current !== currentHHMM) {
+        alertedPrayer.current = currentHHMM;
+        setLockedPrayer({ label: PRAYER_LABELS[hit], scheduled: currentHHMM });
+        setPrayerAlert(true);
+        if (prayerAlertTimer.current) clearTimeout(prayerAlertTimer.current);
+        prayerAlertTimer.current = setTimeout(() => { setPrayerAlert(false); setLockedPrayer(null); }, 5 * 60 * 1000);
+      }
+    }
+  }, [time, prayers, restStart, restInterval]);
+
+  if (!time) return null;
+
+  const hours = String(time.getHours()).padStart(2, "0");
+  const minutes = String(time.getMinutes()).padStart(2, "0");
+  const seconds = String(time.getSeconds()).padStart(2, "0");
+  const dateLabel = time.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const secondsPct = (time.getSeconds() / 59) * 100;
+  const nowSecs = time.getHours() * 3600 + time.getMinutes() * 60 + time.getSeconds();
+
+  const [startH, startM] = restStart.split(":").map(Number);
+  const startSecs = startH * 3600 + startM * 60;
+  const intervalSecs = restInterval * 60;
+  const elapsed = ((nowSecs - startSecs) % (24 * 3600) + 24 * 3600) % (24 * 3600);
+  const periodsUntilNext = Math.floor(elapsed / intervalSecs) + 1;
+  const nextRestSecs = (startSecs + periodsUntilNext * intervalSecs) % (24 * 3600);
+  const nextRestTime = `${String(Math.floor(nextRestSecs / 3600)).padStart(2, "0")}:${String(Math.floor((nextRestSecs % 3600) / 60)).padStart(2, "0")}`;
+
+  let nextPrayer: { label: string; scheduled: string } | null = null;
+  if (prayers) {
+    const upcoming = PRAYER_KEYS.filter((k) => prayers[k])
+      .map((k) => {
+        let diff = parseHHMM(prayers[k]!) - nowSecs;
+        if (diff <= 0) diff += 24 * 3600;
+        return { key: k, diff };
+      })
+      .sort((a, b) => a.diff - b.diff)[0];
+    if (upcoming) {
+      const raw = prayers[upcoming.key]!;
+      const [h, m] = raw.split(":").map(Number);
+      nextPrayer = { label: PRAYER_LABELS[upcoming.key], scheduled: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}` };
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-baseline tabular-nums">
+        {`${hours}:${minutes}:${seconds}`.split("").map((char, i) => (
+          <span key={i} className={`inline-block text-center text-[12vw] leading-none ${char === ":" ? "w-[4vw] font-light fc-50" : i >= 6 ? "w-[9vw] font-bold fc-60" : "w-[9vw] font-bold fc-90"}`}>
+            {char}
+          </span>
+        ))}
+      </div>
+      <div className="w-full sm:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-6">
+        <div className="h-full bg-white/70 rounded-full transition-all duration-1000 ease-linear" style={{ width: `${secondsPct}%` }} />
+      </div>
+      <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest fc uppercase md:mt-6 xl:mt-6 2xl:mt-10">{dateLabel}</p>
+      <div className="flex flex-col sm:flex-row w-full mt-6">
+        <div onDoubleClick={onRestConfigOpen} className="flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5 cursor-pointer">
+          <div className="flex items-center gap-1.5">
+            {restAlert && <AlertDot onClear={() => { setRestAlert(false); setLockedRestTime(null); }} />}
+            <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Quick Rest</p>
+          </div>
+          <p className={`text-2xl tracking-[0.1em] tabular-nums ${restAlert ? "font-bold text-red-400" : "font-light fc"}`}>{lockedRestTime ?? nextRestTime}</p>
+          <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">next break</p>
+        </div>
+        <div onDoubleClick={onZonePickerOpen} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            {prayerAlert && <AlertDot onClear={() => { setPrayerAlert(false); setLockedPrayer(null); }} />}
+            <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
+            <span className="text-[10px] tracking-[0.2em] fc-20 uppercase border border-white/5 rounded px-1.5 py-0.5">{zone}</span>
+          </div>
+          {nextPrayer ? (
+            <>
+              <p className={`text-2xl tracking-[0.1em] tabular-nums ${prayerAlert ? "font-bold text-red-400" : "font-light fc"}`}>{(lockedPrayer ?? nextPrayer).scheduled}</p>
+              <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">{(lockedPrayer ?? nextPrayer).label}</p>
+            </>
+          ) : (
+            <p className="text-2xl font-light fc-20">—</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default function Clock() {
+  const [zone, setZone] = useState("WLY01");
+  const [prayers, setPrayers] = useState<PrayerTimes | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
   const [listItems, setListItems] = useState<{ id: string; text: string }[]>([]);
   const [listOpen, setListOpen] = useState(false);
   const [restStart, setRestStart] = useState("08:30");
@@ -804,6 +1309,352 @@ export default function Clock() {
   const [dailyQuote, setDailyQuote] = useState<{ q: string; a: string } | null>(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [userIp, setUserIp] = useState<string | null>(null);
+  const [tracks, setTracks] = useState<{ id: string; name: string }[]>([]);
+  const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioBlobUrlRef = useRef<string | null>(null);
+  const tracksRef = useRef(tracks);
+  const currentTrackIdRef = useRef(currentTrackId);
+  const isPlayingRef = useRef(isPlaying);
+  const autoPlayNextRef = useRef(false);
+
+  // Quran Player State
+  const [surahs, setSurahs] = useState<{ number: number; name: string; englishName: string }[]>([]);
+  const [currentSurah, setCurrentSurah] = useState<{ number: number; name: string; englishName: string; ayahs: { audio: string }[] } | null>(null);
+  const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
+  const [isQuranPlaying, setIsQuranPlaying] = useState(false);
+  const [quranVolume, setQuranVolume] = useState(1);
+  const [showQuranModal, setShowQuranModal] = useState(false);
+  const quranAudioRef = useRef<HTMLAudioElement | null>(null);
+  const currentSurahRef = useRef(currentSurah);
+  const currentAyahIndexRef = useRef(currentAyahIndex);
+  const surahsRef = useRef(surahs);
+
+  useEffect(() => { currentSurahRef.current = currentSurah; }, [currentSurah]);
+  useEffect(() => { currentAyahIndexRef.current = currentAyahIndex; }, [currentAyahIndex]);
+  useEffect(() => { surahsRef.current = surahs; }, [surahs]);
+
+  const loadSurah = useCallback(async (num: number, autoPlay = true) => {
+    try {
+      const r = await fetch(`https://api.alquran.cloud/v1/surah/${num}/ar.alafasy`);
+      const d = await r.json();
+      if (d.data && quranAudioRef.current) {
+        // Pause everything first
+        quranAudioRef.current.pause();
+        if (isPlayingRef.current && audioRef.current) {
+          audioRef.current.pause();
+        }
+
+        setCurrentSurah(d.data);
+        setCurrentAyahIndex(0);
+        quranAudioRef.current.src = d.data.ayahs[0].audio;
+        localStorage.setItem("current-surah-num", String(num));
+
+        if (autoPlay) {
+          quranAudioRef.current.play().catch(error => {
+            if (error.name !== "AbortError") {
+              console.error("Quran player play failed:", error);
+            }
+            setIsQuranPlaying(false);
+          });
+          setIsQuranPlaying(true);
+          setIsPlaying(false);
+        }
+      }
+    } catch {
+      // Silence fetch errors
+    }
+  }, []);
+
+  useEffect(() => {
+    fetch("https://api.alquran.cloud/v1/surah")
+      .then((r) => r.json())
+      .then((d) => { if (d.data) setSurahs(d.data); })
+      .catch(() => {});
+    
+    const savedQuranVolume = localStorage.getItem("quran-volume");
+    if (savedQuranVolume) setQuranVolume(Number(savedQuranVolume));
+    const savedSurahNum = localStorage.getItem("current-surah-num");
+    if (savedSurahNum) loadSurah(Number(savedSurahNum), false);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      quranAudioRef.current = new Audio();
+      quranAudioRef.current.volume = quranVolume;
+
+      const audio = quranAudioRef.current;
+      const handleEnded = () => {
+        const surah = currentSurahRef.current;
+        const index = currentAyahIndexRef.current;
+        const allSurahs = surahsRef.current;
+
+        if (surah && index < surah.ayahs.length - 1) {
+          // Move to next ayah in current surah
+          const nextIndex = index + 1;
+          setCurrentAyahIndex(nextIndex);
+          audio.src = surah.ayahs[nextIndex].audio;
+          audio.play();
+        } else if (surah && allSurahs.length > 0) {
+          // End of surah - load next surah if available
+          const nextSurahNum = surah.number + 1;
+          const nextSurahExists = allSurahs.some(s => s.number === nextSurahNum);
+
+          if (nextSurahExists) {
+            // Load next surah and play it
+            loadSurah(nextSurahNum, true);
+          } else {
+            // No more surahs - stop playing
+            setIsQuranPlaying(false);
+            setCurrentAyahIndex(0);
+            if (surah) audio.src = surah.ayahs[0].audio;
+          }
+        } else {
+          setIsQuranPlaying(false);
+          setCurrentAyahIndex(0);
+        }
+      };
+
+      audio.addEventListener("ended", handleEnded);
+      return () => {
+        audio.removeEventListener("ended", handleEnded);
+        audio.pause();
+      };
+    }
+  }, [loadSurah]);
+
+  useEffect(() => {
+    if (quranAudioRef.current) quranAudioRef.current.volume = quranVolume;
+    localStorage.setItem("quran-volume", String(quranVolume));
+  }, [quranVolume]);
+
+  const toggleQuranPlay = () => {
+    if (!quranAudioRef.current) return;
+    if (!currentSurah) {
+      setShowQuranModal(true);
+      return;
+    }
+
+    if (isQuranPlaying) {
+      quranAudioRef.current.pause();
+      setIsQuranPlaying(false);
+    } else {
+      // Pause media player first
+      if (isPlaying && audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+
+      quranAudioRef.current.play().catch(error => {
+        if (error.name !== "AbortError") {
+          console.error("Quran player play failed:", error);
+        }
+        setIsQuranPlaying(false);
+      });
+      setIsQuranPlaying(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!bgConfig.showQuranPlayer && isQuranPlaying && quranAudioRef.current) {
+      quranAudioRef.current.pause();
+      setIsQuranPlaying(false);
+    }
+  }, [bgConfig.showQuranPlayer, isQuranPlaying]);
+
+  useEffect(() => { tracksRef.current = tracks; }, [tracks]);
+  useEffect(() => { currentTrackIdRef.current = currentTrackId; }, [currentTrackId]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  const loadTrack = useCallback(async (id: string, autoPlay = false) => {
+    try {
+      const file = await getMediaFile(id);
+      if (!file || !audioRef.current) return;
+
+      audioRef.current.pause();
+
+      if (quranAudioRef.current) {
+        quranAudioRef.current.pause();
+        setIsQuranPlaying(false);
+      }
+
+      if (audioBlobUrlRef.current) {
+        URL.revokeObjectURL(audioBlobUrlRef.current);
+      }
+      const url = URL.createObjectURL(file.blob);
+      audioBlobUrlRef.current = url;
+
+      audioRef.current.src = url;
+      audioRef.current.load();
+
+      setProgress(0);
+      localStorage.removeItem("media-progress");
+
+      if (autoPlay) {
+        audioRef.current.play().catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isPlaying && currentTrackId) {
+      const interval = setInterval(() => {
+        if (audioRef.current) {
+          const t = audioRef.current.currentTime;
+          setProgress(t);
+          localStorage.setItem(`media-progress`, String(t));
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, currentTrackId]);
+
+  useEffect(() => {
+    const savedTracks = localStorage.getItem("media-tracks");
+    if (savedTracks) setTracks(JSON.parse(savedTracks));
+    const savedTrackId = localStorage.getItem("current-track-id");
+    if (savedTrackId) setCurrentTrackId(savedTrackId);
+    const savedVolume = localStorage.getItem("media-volume");
+    if (savedVolume) setVolume(Number(savedVolume));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      audioRef.current = new Audio();
+
+      const audio = audioRef.current;
+      const updateDuration = () => setDuration(audio.duration);
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
+      const handleEnded = () => {
+        const currentTracks = tracksRef.current;
+        const currentId = currentTrackIdRef.current;
+        const index = currentTracks.findIndex((t) => t.id === currentId);
+
+        if (index !== -1 && index < currentTracks.length - 1) {
+          autoPlayNextRef.current = true;
+          setCurrentTrackId(currentTracks[index + 1].id);
+        } else {
+          if (currentId) {
+            localStorage.removeItem(`media-progress`);
+          }
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+          }
+          setIsPlaying(false);
+          setProgress(0);
+        }
+      };
+      const handleError = (e: Event) => {
+        console.error("Audio error event:", e);
+        if (audio.error) {
+          console.error("Error code:", audio.error.code);
+          console.error("Error message:", audio.error.message);
+        }
+      };
+
+      audio.addEventListener("loadedmetadata", updateDuration);
+      audio.addEventListener("play", handlePlay);
+      audio.addEventListener("pause", handlePause);
+      audio.addEventListener("ended", handleEnded);
+      audio.addEventListener("error", handleError);
+
+      return () => {
+        audio.removeEventListener("loadedmetadata", updateDuration);
+        audio.removeEventListener("play", handlePlay);
+        audio.removeEventListener("pause", handlePause);
+        audio.removeEventListener("ended", handleEnded);
+        audio.removeEventListener("error", handleError);
+        audio.pause();
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+    localStorage.setItem("media-volume", String(volume));
+  }, [volume]);
+
+  useEffect(() => {
+    if (currentTrackId) {
+      const shouldAutoPlay = autoPlayNextRef.current;
+      autoPlayNextRef.current = false;
+      localStorage.setItem("current-track-id", currentTrackId);
+      loadTrack(currentTrackId, shouldAutoPlay);
+    }
+  }, [currentTrackId, loadTrack]);
+
+  const selectTrack = useCallback((id: string) => {
+    autoPlayNextRef.current = true;
+    setCurrentTrackId(id);
+  }, []);
+
+  const togglePlay = () => {
+    if (!audioRef.current || !currentTrackId) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      localStorage.setItem(`media-progress`, String(audioRef.current.currentTime));
+    } else {
+      if (isQuranPlaying && quranAudioRef.current) {
+        quranAudioRef.current.pause();
+        setIsQuranPlaying(false);
+      }
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    const id = Date.now().toString();
+    try {
+      await saveMediaFile({ id, blob: file });
+      const newTracks = [...tracks, { id, name: file.name }];
+      setTracks(newTracks);
+      localStorage.setItem("media-tracks", JSON.stringify(newTracks));
+      if (!currentTrackId) setCurrentTrackId(id);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteMediaFile(id);
+    const newTracks = tracks.filter(t => t.id !== id);
+    setTracks(newTracks);
+    localStorage.setItem("media-tracks", JSON.stringify(newTracks));
+    if (currentTrackId === id) {
+      setCurrentTrackId(newTracks[0]?.id || null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
+      setIsPlaying(false);
+    }
+  };
+
+  const handleSeek = (val: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = val;
+      setProgress(val);
+      if (currentTrackId) {
+        localStorage.setItem(`media-progress`, String(val));
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!bgConfig.showPlayer && isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [bgConfig.showPlayer, isPlaying]);
 
   useEffect(() => {
     const saved = localStorage.getItem("solat-zone");
@@ -890,48 +1741,6 @@ export default function Clock() {
   const removeListItem = (id: string) => saveList(listItems.filter((i) => i.id !== id));
 
   useEffect(() => {
-    setTime(new Date());
-    const id = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (!time) return;
-
-    // Rest alert: fires at each configured rest interval (HH:MM match, no seconds needed)
-    const currentHHMM = `${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`;
-    {
-      const [sH, sM] = restStart.split(":").map(Number);
-      const nowMins = time.getHours() * 60 + time.getMinutes();
-      const startMins = sH * 60 + sM;
-      const distMins = ((nowMins - startMins) % (24 * 60) + 24 * 60) % (24 * 60);
-      if (distMins % restInterval === 0 && alertedRestHour.current !== currentHHMM) {
-        alertedRestHour.current = currentHHMM;
-        setLockedRestTime(currentHHMM);
-        setRestAlert(true);
-        if (restAlertTimer.current) clearTimeout(restAlertTimer.current);
-        restAlertTimer.current = setTimeout(() => { setRestAlert(false); setLockedRestTime(null); }, 5 * 60 * 1000);
-      }
-    }
-
-    // Prayer alert: fires once when current HH:MM matches a prayer time
-    if (prayers) {
-      const hit = PRAYER_KEYS.find((k) => {
-        if (!prayers[k]) return false;
-        const [h, m] = prayers[k]!.split(":").map(Number);
-        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}` === currentHHMM;
-      });
-      if (hit && alertedPrayer.current !== currentHHMM) {
-        alertedPrayer.current = currentHHMM;
-        setLockedPrayer({ label: PRAYER_LABELS[hit], scheduled: currentHHMM });
-        setPrayerAlert(true);
-        if (prayerAlertTimer.current) clearTimeout(prayerAlertTimer.current);
-        prayerAlertTimer.current = setTimeout(() => { setPrayerAlert(false); setLockedPrayer(null); }, 5 * 60 * 1000);
-      }
-    }
-  }, [time, prayers, restStart, restInterval]);
-
-  useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
@@ -984,53 +1793,6 @@ export default function Clock() {
     localStorage.setItem("solat-zone", z);
   };
 
-  if (!time) return null;
-
-  const hours = String(time.getHours()).padStart(2, "0");
-  const minutes = String(time.getMinutes()).padStart(2, "0");
-  const seconds = String(time.getSeconds()).padStart(2, "0");
-
-  const dateLabel = time.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  const secondsPct = (time.getSeconds() / 59) * 100;
-
-  const nowSecs = time.getHours() * 3600 + time.getMinutes() * 60 + time.getSeconds();
-
-  // Next rest: based on configurable start + interval
-  const [startH, startM] = restStart.split(":").map(Number);
-  const startSecs = startH * 3600 + startM * 60;
-  const intervalSecs = restInterval * 60;
-  const elapsed = ((nowSecs - startSecs) % (24 * 3600) + 24 * 3600) % (24 * 3600);
-  const periodsUntilNext = Math.floor(elapsed / intervalSecs) + 1;
-  const nextRestSecs = (startSecs + periodsUntilNext * intervalSecs) % (24 * 3600);
-  const nextRestTime = `${String(Math.floor(nextRestSecs / 3600)).padStart(2, "0")}:${String(Math.floor((nextRestSecs % 3600) / 60)).padStart(2, "0")}`;
-
-  // Next prayer
-  let nextPrayer: { label: string; scheduled: string } | null = null;
-  if (prayers) {
-    const upcoming = PRAYER_KEYS.filter((k) => prayers[k])
-      .map((k) => {
-        let diff = parseHHMM(prayers[k]!) - nowSecs;
-        if (diff <= 0) diff += 24 * 3600;
-        return { key: k, diff };
-      })
-      .sort((a, b) => a.diff - b.diff)[0];
-
-    if (upcoming) {
-      const raw = prayers[upcoming.key]!;
-      const [h, m] = raw.split(":").map(Number);
-      nextPrayer = {
-        label: PRAYER_LABELS[upcoming.key],
-        scheduled: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
-      };
-    }
-  }
-
   const bgStyle = { backgroundColor: bgConfig.color };
 
   return (
@@ -1048,6 +1810,36 @@ export default function Clock() {
           current={zone}
           onSave={saveZone}
           onClose={() => setShowPicker(false)}
+        />
+      )}
+      {showMediaModal && (
+        <MediaModal 
+          tracks={tracks}
+          currentTrackId={currentTrackId}
+          isPlaying={isPlaying}
+          progress={progress}
+          duration={duration}
+          volume={volume}
+          onPlayToggle={togglePlay}
+          onTrackSelect={selectTrack}
+          onUpload={handleUpload}
+          onDelete={handleDelete}
+          onSeek={handleSeek}
+          onVolumeChange={setVolume}
+          onClose={() => setShowMediaModal(false)}
+        />
+      )}
+      {showQuranModal && (
+        <QuranPlayerModal
+          surahs={surahs}
+          currentSurah={currentSurah}
+          currentAyahIndex={currentAyahIndex}
+          isPlaying={isQuranPlaying}
+          volume={quranVolume}
+          onPlayToggle={toggleQuranPlay}
+          onSurahSelect={loadSurah}
+          onVolumeChange={setQuranVolume}
+          onClose={() => setShowQuranModal(false)}
         />
       )}
       {showRestConfig && (
@@ -1134,72 +1926,73 @@ export default function Clock() {
           )}
         </div>}
 
-        {/* Time */}
-        <div className="flex items-baseline tabular-nums">
-          {`${hours}:${minutes}:${seconds}`.split("").map((char, i) => (
-            <span
-              key={i}
-              className={`inline-block text-center text-[12vw] leading-none ${
-                char === ":"
-                  ? "w-[4vw] font-light fc-50"
-                  : i >= 6
-                  ? "w-[9vw] font-bold fc-60"
-                  : "w-[9vw] font-bold fc-90"
-              }`}
+        <ClockFace
+          prayers={prayers}
+          restStart={restStart}
+          restInterval={restInterval}
+          zone={zone}
+          onRestConfigOpen={() => setShowRestConfig(true)}
+          onZonePickerOpen={() => setShowPicker(true)}
+        />
+
+        {/* Media Player Widget */}
+        {bgConfig.showPlayer !== false && (
+          <div className="w-full flex flex-col items-center gap-2 mt-10 pt-4">
+            <button 
+              onClick={() => setShowMediaModal(true)}
+              className="flex items-center gap-3 px-4 py-2 rounded-none bg-white/[0.03] border-2 border-white/25 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
             >
-              {char}
-            </span>
-          ))}
-        </div>
-
-        {/* Progress bar */}
-        <div className="w-full sm:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-6">
-          <div
-            className="h-full bg-white/70 rounded-full transition-all duration-1000 ease-linear"
-            style={{ width: `${secondsPct}%` }}
-          />
-        </div>
-
-        {/* Date */}
-        <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest fc uppercase xl:mt-6 2xl:mt-10">
-          {dateLabel}
-        </p>
-
-        {/* Bottom info row */}
-        <div className="flex flex-col sm:flex-row w-full mt-6">
-          {/* Quick Rest */}
-          <div onDoubleClick={() => setShowRestConfig(true)} className="flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5 cursor-pointer">
-            <div className="flex items-center gap-1.5">
-              {restAlert && <AlertDot onClear={() => { setRestAlert(false); setLockedRestTime(null); }} />}
-              <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Quick Rest</p>
-            </div>
-            <p className={`text-2xl tracking-[0.1em] tabular-nums ${restAlert ? "font-bold text-red-400" : "font-light fc"}`}>
-              {lockedRestTime ?? nextRestTime}
-            </p>
-            <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">next break</p>
-          </div>
-
-          {/* Prayer Time */}
-          <div onDoubleClick={() => setShowPicker(true)} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
-            <div className="flex items-center gap-2 flex-wrap justify-center">
-              {prayerAlert && <AlertDot onClear={() => { setPrayerAlert(false); setLockedPrayer(null); }} />}
-              <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
-              <span className="text-[10px] tracking-[0.2em] fc-20 uppercase border border-white/5 rounded px-1.5 py-0.5">{zone}</span>
-            </div>
-            {nextPrayer ? (
-              <>
-                <p className={`text-2xl tracking-[0.1em] tabular-nums ${prayerAlert ? "font-bold text-red-400" : "font-light fc"}`}>
-                  {(lockedPrayer ?? nextPrayer).scheduled}
+              <div
+                onClick={(e) => { e.stopPropagation(); if (tracks.length > 0) togglePlay(); }}
+                className={`w-8 h-8 flex items-center justify-center bg-[#3a3a3a] border-2 border-white/25 rounded-none shrink-0 group-hover:bg-[#4a4a4a] ${tracks.length === 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+              >
+                {isPlaying ? (
+                  <svg className="w-4 h-4 fc-60" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                ) : (
+                  <svg className="w-4 h-4 fc-60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Now Playing</p>
+                <p className="text-xs fc-60 truncate">
+                  {tracks.find(t => t.id === currentTrackId)?.name || "No track selected"}
                 </p>
-                <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">
-                  {(lockedPrayer ?? nextPrayer).label}
-                </p>
-              </>
-            ) : (
-              <p className="text-2xl font-light fc-20">—</p>
-            )}
+              </div>
+            </button>
           </div>
-        </div>
+        )}
+
+        {/* Quran Player Widget */}
+        {bgConfig.showQuranPlayer !== false && (
+          <div className={`w-full flex flex-col items-center gap-2 ${bgConfig.showPlayer !== false ? "mt-2" : "mt-10"}`}>
+            <button 
+              onClick={() => setShowQuranModal(true)}
+              className="flex items-center gap-3 px-4 py-2 rounded-none bg-white/[0.03] border-2 border-white/25 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
+            >
+              <div 
+                onClick={(e) => { e.stopPropagation(); toggleQuranPlay(); }}
+                className="w-8 h-8 flex items-center justify-center bg-white/5 border-2 border-white/25 rounded-none shrink-0 group-hover:bg-white/10"
+              >
+                {isQuranPlaying ? (
+                  <svg className="w-4 h-4 fc-60" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                ) : (
+                  <svg className="w-4 h-4 fc-60" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Quran Streaming</p>
+                {currentSurah ? (
+                  <>
+                    <p className="text-base fc-80 leading-tight" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{currentSurah.name}</p>
+                    <p className="text-[10px] fc-40 tracking-wide truncate">{currentSurah.englishName}</p>
+                  </>
+                ) : (
+                  <p className="text-xs fc-40">Select a Surah</p>
+                )}
+              </div>
+            </button>
+          </div>
+        )}
 
         {/* List */}
         {showListAdd && (
