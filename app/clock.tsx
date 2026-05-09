@@ -460,18 +460,9 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
           <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex flex-col gap-3 px-5 py-5">
+        <div className="flex flex-col items-center gap-4 px-5 py-8">
           <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Color</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer"
-            />
-            <span className="text-xs text-white/40 tracking-widest font-mono">{color}</span>
-          </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap justify-center">
             {["#0a0a0a", "#0f172a", "#0d1117", "#1a0a2e", "#0a1628", "#1a1a0a"].map((c) => (
               <button
                 key={c}
@@ -481,6 +472,14 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
               />
             ))}
           </div>
+          <p className="text-[10px] tracking-[0.25em] text-white/25 uppercase">Or select your own color</p>
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            className="w-14 h-14 rounded-xl bg-transparent cursor-pointer"
+          />
+          <span className="text-xs text-white/40 tracking-widest font-mono">{color}</span>
         </div>
 
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
