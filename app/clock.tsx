@@ -433,9 +433,10 @@ type BgConfig = {
   color: string;
   fontColor: string;
   showQuran: boolean;
+  showDailyQuote: boolean;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false };
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -459,6 +460,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [color, setColor] = useState(config.color ?? "#0a0a0a");
   const [fontColor, setFontColor] = useState(config.fontColor ?? "#ffffff");
   const [showQuran, setShowQuran] = useState(config.showQuran ?? true);
+  const [showDailyQuote, setShowDailyQuote] = useState(config.showDailyQuote ?? false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -467,7 +469,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color, fontColor, showQuran }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote }); onClose(); };
 
   return (
     <div
@@ -475,13 +477,13 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
       className="fixed inset-0 z-50 flex items-start justify-end p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-10">
+      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-10 max-h-[calc(100vh-5rem)]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Appearance</p>
           <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex flex-col gap-6 px-5 py-6">
+        <div className="flex flex-col gap-6 px-5 py-6 overflow-y-auto">
           <ColorSection
             label="Background"
             value={color}
@@ -503,6 +505,15 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
               className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+            </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quote</p>
+            <button
+              onClick={() => setShowDailyQuote((v) => !v)}
+              className={`w-10 h-5 rounded-full transition-colors relative ${showDailyQuote ? "bg-white/30" : "bg-white/10"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDailyQuote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
             </button>
           </div>
         </div>
@@ -652,6 +663,8 @@ export default function Clock() {
   const [verseNo, setVerseNo] = useState(1);
   const [verseData, setVerseData] = useState<{ surah: { englishName: string; englishNameTranslation: string; revelationType: string }; numberInSurah: number; text: string } | null>(null);
   const [verseLoading, setVerseLoading] = useState(false);
+  const [dailyQuote, setDailyQuote] = useState<{ q: string; a: string } | null>(null);
+  const [userIp, setUserIp] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("solat-zone");
@@ -679,6 +692,32 @@ export default function Clock() {
       .catch(() => {})
       .finally(() => setVerseLoading(false));
   }, [verseNo]);
+
+  useEffect(() => {
+    fetch("https://api.ipify.org?format=json")
+      .then((r) => r.json())
+      .then((d) => { if (d.ip) setUserIp(d.ip); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!bgConfig.showDailyQuote) return;
+    const today = new Date().toDateString();
+    const cached = localStorage.getItem("daily-quote");
+    if (cached) {
+      const { date, quote } = JSON.parse(cached);
+      if (date === today) { setDailyQuote(quote); return; }
+    }
+    fetch("/api/quote")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.q && d.a) {
+          setDailyQuote(d);
+          localStorage.setItem("daily-quote", JSON.stringify({ date: today, quote: d }));
+        }
+      })
+      .catch(() => {});
+  }, [bgConfig.showDailyQuote]);
 
   const nextVerse = () => {
     const next = verseNo < 6236 ? verseNo + 1 : 1;
@@ -894,7 +933,7 @@ export default function Clock() {
 
       {/* Top bar */}
       <div className="flex items-center gap-3 w-full pt-4 px-4">
-        {bgConfig.showQuran !== false && (
+        {bgConfig.showQuran !== false ? (
           <button
             onClick={() => setShowVerseModal(true)}
             disabled={!verseData}
@@ -904,18 +943,31 @@ export default function Clock() {
               {verseLoading ? "Loading…" : verseData ? `${verseData.surah.englishName} · ${verseData.numberInSurah} — ${verseData.text}` : ""}
             </span>
           </button>
-        )}
+        ) : (bgConfig.showDailyQuote && dailyQuote) ? (
+          <p className="min-w-0 truncate text-[11px] fc-70 tracking-[0.1em]">
+            &ldquo;{dailyQuote.q}&rdquo;<span className="fc-25"> &mdash; {dailyQuote.a}</span>
+          </p>
+        ) : null}
         <button
           onClick={() => setShowBgSettings(true)}
-          className="shrink-0 fc-20 hover:fc-50 transition-colors ml-auto"
+          className="shrink-0 fc-50 hover:fc-80 transition-colors ml-auto"
           title="Background settings"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3" />
-            <path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
           </svg>
         </button>
       </div>
+
+      {bgConfig.showQuran !== false && bgConfig.showDailyQuote && dailyQuote && (
+        <div className="w-full pl-4 pb-1">
+          <p className="text-[11px] fc-70 tracking-[0.1em] text-left">
+            &ldquo;{dailyQuote.q}&rdquo;
+            <span className="fc-25"> &mdash; {dailyQuote.a}</span>
+          </p>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
         {/* Weather */}
@@ -1051,7 +1103,10 @@ export default function Clock() {
         </div>
 
       </div>
-        <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="py-6 text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors text-center w-full block">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
+        <div className="flex flex-col items-center pb-6 pt-4 gap-1">
+          <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
+          {userIp && <span className="text-[9px] font-thin tracking-[0.2em] fc-25">{userIp}</span>}
+        </div>
       </div>
     </>
   );
