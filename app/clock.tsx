@@ -979,16 +979,11 @@ export default function Clock() {
           </div>
 
           {/* Prayer Time */}
-          <div className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8">
+          <div onDoubleClick={() => setShowPicker(true)} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap justify-center">
               {prayerAlert && <AlertDot onClear={() => setPrayerAlert(false)} />}
               <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
-              <button
-                onClick={() => setShowPicker(true)}
-                className="text-[10px] tracking-[0.2em] fc-20 hover:fc-50 uppercase transition-colors border border-white/5 hover:border-white/25 rounded px-1.5 py-0.5"
-              >
-                {zone}
-              </button>
+              <span className="text-[10px] tracking-[0.2em] fc-20 uppercase border border-white/5 rounded px-1.5 py-0.5">{zone}</span>
             </div>
             {nextPrayer ? (
               <>
