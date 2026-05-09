@@ -456,10 +456,12 @@ type BgConfig = {
   showNote: boolean;
   showPlayer: boolean;
   showQuranPlayer: boolean;
+  showRest: boolean;
+  showPrayers: boolean;
   fontFamily: FontId;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, fontFamily: "montserrat" };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, showRest: true, showPrayers: true, fontFamily: "montserrat" };
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -489,6 +491,8 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [showNote, setShowNote] = useState(config.showNote ?? true);
   const [showPlayer, setShowPlayer] = useState(config.showPlayer ?? true);
   const [showQuranPlayer, setShowQuranPlayer] = useState(config.showQuranPlayer ?? true);
+  const [showRest, setShowRest] = useState(config.showRest ?? true);
+  const [showPrayers, setShowPrayers] = useState(config.showPrayers ?? true);
   const [fontFamily, setFontFamily] = useState<FontId>(config.fontFamily ?? "montserrat");
   const [openBg, setOpenBg] = useState(false);
   const [openFont, setOpenFont] = useState(false);
@@ -501,7 +505,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, fontFamily }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showRest, showPrayers, fontFamily }); onClose(); };
 
   return (
     <div
@@ -584,7 +588,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
 
           <div className="flex flex-col gap-4 px-5 py-4">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Show Quran</p>
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quran</p>
               <button
                 onClick={() => setShowQuran((v) => !v)}
                 className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
@@ -611,12 +615,21 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
               </button>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Copyright</p>
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quick Rest</p>
               <button
-                onClick={() => setShowCopyright((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showCopyright ? "bg-white/30" : "bg-white/10"}`}
+                onClick={() => setShowRest((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showRest ? "bg-white/30" : "bg-white/10"}`}
               >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showCopyright ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showRest ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Waktu Solat</p>
+              <button
+                onClick={() => setShowPrayers((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showPrayers ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPrayers ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
               </button>
             </div>
             <div className="flex items-center justify-between">
@@ -644,6 +657,15 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                 className={`w-10 h-5 rounded-full transition-colors relative ${showQuranPlayer ? "bg-white/30" : "bg-white/10"}`}
               >
                 <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuranPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Copyright</p>
+              <button
+                onClick={() => setShowCopyright((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showCopyright ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showCopyright ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
               </button>
             </div>
           </div>
@@ -802,13 +824,11 @@ function MediaModal({
   isPlaying,
   progress,
   duration,
-  volume,
   onPlayToggle,
   onTrackSelect,
   onUpload,
   onDelete,
   onSeek,
-  onVolumeChange,
   onClose,
 }: {
   tracks: { id: string; name: string }[];
@@ -816,18 +836,15 @@ function MediaModal({
   isPlaying: boolean;
   progress: number;
   duration: number;
-  volume: number;
   onPlayToggle: () => void;
   onTrackSelect: (id: string) => void;
   onUpload: (file: File) => void;
   onDelete: (id: string) => void;
   onSeek: (val: number) => void;
-  onVolumeChange: (val: number) => void;
   onClose: () => void;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showVolume, setShowVolume] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -900,31 +917,7 @@ function MediaModal({
           </div>
 
           <div className="w-full flex items-center gap-4">
-            <button 
-              onClick={() => setShowVolume(!showVolume)}
-              className={`p-1 transition-colors ${showVolume ? "fc-80" : "fc-30 hover:fc-60"}`}
-              title="Toggle volume"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-              </svg>
-            </button>
-            {showVolume && (
-              <div 
-                className="group/volume relative flex-1 h-[4px] bg-white/10 cursor-pointer overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300 rounded-full"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const pct = Math.max(0, Math.min(1, x / rect.width));
-                  onVolumeChange(pct);
-                }}
-              >
-                <div 
-                  className="absolute top-0 left-0 h-full bg-white/40 transition-all duration-300 ease-out group-hover/volume:bg-white/60 rounded-full"
-                  style={{ width: `${volume * 100}%` }}
-                />
-              </div>
-            )}
+            {/* volume control removed */}
           </div>
         </div>
 
@@ -986,25 +979,21 @@ function QuranPlayerModal({
   currentSurah,
   currentAyahIndex,
   isPlaying,
-  volume,
   onPlayToggle,
   onSurahSelect,
-  onVolumeChange,
   onClose,
 }: {
   surahs: { number: number; name: string; englishName: string }[];
   currentSurah: { number: number; name: string; englishName: string; ayahs: { audio: string }[] } | null;
   currentAyahIndex: number;
   isPlaying: boolean;
-  volume: number;
   onPlayToggle: () => void;
   onSurahSelect: (num: number) => void;
-  onVolumeChange: (val: number) => void;
   onClose: () => void;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState("");
-  const [showVolume, setShowVolume] = useState(false);
+  // volume control removed
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -1036,66 +1025,41 @@ function QuranPlayerModal({
 
         {/* Player Controls */}
         <div className="px-6 py-8 flex flex-col items-center gap-6 border-b border-white/5 bg-white/[0.02]">
-          <div className="text-center w-full">
-            <p className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-1">
-              {currentSurah ? `Surah ${currentSurah.number}` : "Select a Surah"}
-            </p>
-            {currentSurah ? (
-              <>
-                <p className="text-3xl fc-90 tracking-wide m-5" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
-                  {currentSurah.name}
-                </p>
-                <p className="text-xs fc-50 tracking-[0.15em] mt-1">{currentSurah.englishName}</p>
-              </>
-            ) : (
-              <p className="text-sm fc-30">—</p>
-            )}
-            {currentSurah && (
-              <p className="text-[10px] tracking-[0.1em] text-white/20 mt-2 uppercase">
-                Verse {currentAyahIndex + 1} of {currentSurah.ayahs.length}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-8">
+          <div className="w-full flex flex-col sm:flex-row items-center gap-4 sm:gap-8 justify-center mx-auto">
             <button
               onClick={onPlayToggle}
-              className="w-14 h-14 flex items-center justify-center bg-[#3a3a3a] hover:bg-[#4a4a4a] border border-white/8 rounded-lg transition-all group"
+              className="w-16 h-16 flex items-center justify-center bg-[#3a3a3a] hover:bg-[#4a4a4a] border border-white/8 rounded-lg transition-all group shrink-0"
+              aria-label="Play/Pause Quran"
             >
               {isPlaying ? (
-                <svg className="w-6 h-6 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <svg className="w-7 h-7 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               ) : (
-                <svg className="w-6 h-6 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-7 h-7 fc-80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
+
+            <div className="text-center w-auto">
+              {!currentSurah && (
+                <p className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-1">Select a Surah</p>
+              )}
+              {currentSurah ? (
+                <div className="flex flex-col items-center sm:items-start sm:gap-1">
+                  <p className="text-2xl sm:text-3xl fc-90 tracking-wide leading-tight text-center" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                    {currentSurah.name}
+                  </p>
+                  <p className="text-[11px] fc-50 tracking-[0.12em] mt-1 truncate max-w-[20rem] text-center sm:text-left">
+                    {currentSurah.englishName}
+                    <span className="text-[10px] fc-30 ml-2">· {currentAyahIndex + 1}/{currentSurah.ayahs.length}</span>
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm fc-30">—</p>
+              )}
+            </div>
           </div>
 
           <div className="w-full flex items-center gap-4">
-            <button 
-              onClick={() => setShowVolume(!showVolume)}
-              className={`p-1 transition-colors ${showVolume ? "fc-80" : "fc-30 hover:fc-60"}`}
-              title="Toggle volume"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-              </svg>
-            </button>
-            {showVolume && (
-              <div 
-                className="group/volume relative flex-1 h-[4px] bg-white/10 cursor-pointer overflow-hidden animate-in fade-in slide-in-from-left-2 duration-300 rounded-full"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const pct = Math.max(0, Math.min(1, x / rect.width));
-                  onVolumeChange(pct);
-                }}
-              >
-                <div 
-                  className="absolute top-0 left-0 h-full bg-white/40 transition-all duration-300 ease-out group-hover/volume:bg-white/60 rounded-full"
-                  style={{ width: `${volume * 100}%` }}
-                />
-              </div>
-            )}
+            {/* volume control removed */}
           </div>
         </div>
 
@@ -1155,6 +1119,8 @@ function ClockFace({
   zone,
   onRestConfigOpen,
   onZonePickerOpen,
+  showRest,
+  showPrayers,
 }: {
   prayers: PrayerTimes | null;
   restStart: string;
@@ -1162,6 +1128,8 @@ function ClockFace({
   zone: string;
   onRestConfigOpen: () => void;
   onZonePickerOpen: () => void;
+  showRest?: boolean;
+  showPrayers?: boolean;
 }) {
   const [time, setTime] = useState<Date | null>(null);
   const [restAlert, setRestAlert] = useState(false);
@@ -1258,15 +1226,21 @@ function ClockFace({
       </div>
       <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest fc uppercase md:mt-6 xl:mt-6 2xl:mt-10">{dateLabel}</p>
       <div className="flex flex-col sm:flex-row w-full mt-6">
-        <div onDoubleClick={onRestConfigOpen} className="flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5 cursor-pointer">
+        {showRest !== false && (
+          <div
+            onDoubleClick={onRestConfigOpen}
+            className={`flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 ${showPrayers !== false ? "sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5" : ""} cursor-pointer`}
+          >
           <div className="flex items-center gap-1.5">
             {restAlert && <AlertDot onClear={() => { setRestAlert(false); setLockedRestTime(null); }} />}
             <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Quick Rest</p>
           </div>
           <p className={`text-2xl tracking-[0.1em] tabular-nums ${restAlert ? "font-bold text-red-400" : "font-light fc"}`}>{lockedRestTime ?? nextRestTime}</p>
           <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">next break</p>
-        </div>
-        <div onDoubleClick={onZonePickerOpen} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
+          </div>
+        )}
+        {showPrayers !== false && (
+          <div onDoubleClick={onZonePickerOpen} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
           <div className="flex items-center gap-2 flex-wrap justify-center">
             {prayerAlert && <AlertDot onClear={() => { setPrayerAlert(false); setLockedPrayer(null); }} />}
             <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
@@ -1280,7 +1254,8 @@ function ClockFace({
           ) : (
             <p className="text-2xl font-light fc-20">—</p>
           )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );
@@ -1339,7 +1314,7 @@ export default function Clock() {
   useEffect(() => { currentAyahIndexRef.current = currentAyahIndex; }, [currentAyahIndex]);
   useEffect(() => { surahsRef.current = surahs; }, [surahs]);
 
-  const loadSurah = useCallback(async (num: number, autoPlay = true) => {
+  const loadSurah = useCallback(async (num: number, autoPlay = true, startAyah = 0) => {
     try {
       const r = await fetch(`https://api.alquran.cloud/v1/surah/${num}/ar.alafasy`);
       const d = await r.json();
@@ -1351,9 +1326,11 @@ export default function Clock() {
         }
 
         setCurrentSurah(d.data);
-        setCurrentAyahIndex(0);
-        quranAudioRef.current.src = d.data.ayahs[0].audio;
+        const idx = Math.max(0, Math.min(startAyah, d.data.ayahs.length - 1));
+        setCurrentAyahIndex(idx);
+        quranAudioRef.current.src = d.data.ayahs[idx].audio;
         localStorage.setItem("current-surah-num", String(num));
+        localStorage.setItem("current-ayah-index", String(idx));
 
         if (autoPlay) {
           quranAudioRef.current.play().catch(error => {
@@ -1380,8 +1357,18 @@ export default function Clock() {
     const savedQuranVolume = localStorage.getItem("quran-volume");
     if (savedQuranVolume) setQuranVolume(Number(savedQuranVolume));
     const savedSurahNum = localStorage.getItem("current-surah-num");
-    if (savedSurahNum) loadSurah(Number(savedSurahNum), false);
+    if (savedSurahNum) {
+      const savedAyah = parseInt(localStorage.getItem("current-ayah-index") ?? "0");
+      loadSurah(Number(savedSurahNum), false, isNaN(savedAyah) ? 0 : savedAyah);
+    }
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (currentSurah) {
+      localStorage.setItem("current-surah-num", String(currentSurah.number));
+      localStorage.setItem("current-ayah-index", String(currentAyahIndex));
+    }
+  }, [currentSurah, currentAyahIndex]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1819,13 +1806,11 @@ export default function Clock() {
           isPlaying={isPlaying}
           progress={progress}
           duration={duration}
-          volume={volume}
           onPlayToggle={togglePlay}
           onTrackSelect={selectTrack}
           onUpload={handleUpload}
           onDelete={handleDelete}
           onSeek={handleSeek}
-          onVolumeChange={setVolume}
           onClose={() => setShowMediaModal(false)}
         />
       )}
@@ -1835,10 +1820,8 @@ export default function Clock() {
           currentSurah={currentSurah}
           currentAyahIndex={currentAyahIndex}
           isPlaying={isQuranPlaying}
-          volume={quranVolume}
           onPlayToggle={toggleQuranPlay}
           onSurahSelect={loadSurah}
-          onVolumeChange={setQuranVolume}
           onClose={() => setShowQuranModal(false)}
         />
       )}
@@ -1933,6 +1916,8 @@ export default function Clock() {
           zone={zone}
           onRestConfigOpen={() => setShowRestConfig(true)}
           onZonePickerOpen={() => setShowPicker(true)}
+          showRest={bgConfig.showRest}
+          showPrayers={bgConfig.showPrayers}
         />
 
         {/* Media Player Widget */}
@@ -1953,7 +1938,7 @@ export default function Clock() {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Now Playing</p>
+                <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-2">Now Playing</p>
                 <p className="text-xs fc-60 truncate">
                   {tracks.find(t => t.id === currentTrackId)?.name || "No track selected"}
                 </p>
@@ -1984,7 +1969,10 @@ export default function Clock() {
                 {currentSurah ? (
                   <>
                     <p className="text-base fc-80 leading-tight my-2" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{currentSurah.name}</p>
-                    <p className="text-[10px] fc-40 tracking-wide truncate">{currentSurah.englishName}</p>
+                    <p className="text-[10px] fc-40 tracking-wide truncate">
+                      {currentSurah.englishName}
+                      <span className="text-[10px] fc-30 ml-2">· {currentAyahIndex + 1}</span>
+                    </p>
                   </>
                 ) : (
                   <p className="text-xs fc-40">Select a Surah</p>
