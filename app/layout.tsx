@@ -1,5 +1,17 @@
 import type { Metadata } from "next";
-import { Montserrat, Noto_Naskh_Arabic } from "next/font/google";
+import {
+  Montserrat,
+  Noto_Naskh_Arabic,
+  Inter,
+  Roboto,
+  Poppins,
+  Raleway,
+  Nunito,
+  Playfair_Display,
+  Lato,
+  Oswald,
+  DM_Sans,
+} from "next/font/google";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -14,6 +26,60 @@ const notoNaskhArabic = Noto_Naskh_Arabic({
   weight: ["400", "700"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const lato = Lato({
+  variable: "--font-lato",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const oswald = Oswald({
+  variable: "--font-oswald",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Dashboard",
 };
@@ -24,7 +90,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${notoNaskhArabic.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={[
+        montserrat.variable,
+        notoNaskhArabic.variable,
+        inter.variable,
+        roboto.variable,
+        poppins.variable,
+        raleway.variable,
+        nunito.variable,
+        playfairDisplay.variable,
+        lato.variable,
+        oswald.variable,
+        dmSans.variable,
+        "h-full antialiased",
+      ].join(" ")}
+    >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

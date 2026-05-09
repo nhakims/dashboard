@@ -429,14 +429,33 @@ function hexToRgbStr(hex: string): string {
   return `${r} ${g} ${b}`;
 }
 
+const FONTS = [
+  { id: "montserrat",       label: "Montserrat" },
+  { id: "inter",            label: "Inter" },
+  { id: "roboto",           label: "Roboto" },
+  { id: "poppins",          label: "Poppins" },
+  { id: "raleway",          label: "Raleway" },
+  { id: "nunito",           label: "Nunito" },
+  { id: "playfair-display", label: "Playfair Display" },
+  { id: "lato",             label: "Lato" },
+  { id: "oswald",           label: "Oswald" },
+  { id: "dm-sans",          label: "DM Sans" },
+] as const;
+
+type FontId = typeof FONTS[number]["id"];
+
 type BgConfig = {
   color: string;
   fontColor: string;
   showQuran: boolean;
   showDailyQuote: boolean;
+  showWeather: boolean;
+  showCopyright: boolean;
+  showNote: boolean;
+  fontFamily: FontId;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: true, showCopyright: true, showNote: true, fontFamily: "montserrat" };
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -461,8 +480,13 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [fontColor, setFontColor] = useState(config.fontColor ?? "#ffffff");
   const [showQuran, setShowQuran] = useState(config.showQuran ?? true);
   const [showDailyQuote, setShowDailyQuote] = useState(config.showDailyQuote ?? false);
+  const [showWeather, setShowWeather] = useState(config.showWeather ?? true);
+  const [showCopyright, setShowCopyright] = useState(config.showCopyright ?? true);
+  const [showNote, setShowNote] = useState(config.showNote ?? true);
+  const [fontFamily, setFontFamily] = useState<FontId>(config.fontFamily ?? "montserrat");
   const [openBg, setOpenBg] = useState(false);
   const [openFont, setOpenFont] = useState(false);
+  const [openFontFamily, setOpenFontFamily] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -471,7 +495,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, fontFamily }); onClose(); };
 
   return (
     <div
@@ -524,6 +548,34 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
 
           <div className="border-t border-white/5" />
 
+          {/* Font family accordion */}
+          <button
+            onClick={() => setOpenFontFamily((v) => !v)}
+            className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-white/50 leading-none" style={{ fontFamily: `var(--font-${fontFamily})` }}>Aa</span>
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Font</p>
+            </div>
+            <svg className={`w-3.5 h-3.5 text-white/20 transition-transform ${openFontFamily ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          {openFontFamily && (
+            <div className="px-3 pb-3 flex flex-col gap-0.5">
+              {FONTS.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFontFamily(f.id)}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${fontFamily === f.id ? "bg-white/10" : "hover:bg-white/5"}`}
+                >
+                  <span className="text-sm text-white/70" style={{ fontFamily: `var(--font-${f.id})` }}>{f.label}</span>
+                  {fontFamily === f.id && <span className="text-white/40 text-[10px]">✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="border-t border-white/5" />
+
           <div className="flex flex-col gap-4 px-5 py-4">
             <div className="flex items-center justify-between">
               <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Show Quran</p>
@@ -541,6 +593,33 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                 className={`w-10 h-5 rounded-full transition-colors relative ${showDailyQuote ? "bg-white/30" : "bg-white/10"}`}
               >
                 <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDailyQuote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Weather</p>
+              <button
+                onClick={() => setShowWeather((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showWeather ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showWeather ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Copyright</p>
+              <button
+                onClick={() => setShowCopyright((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showCopyright ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showCopyright ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Note</p>
+              <button
+                onClick={() => setShowNote((v) => !v)}
+                className={`w-10 h-5 rounded-full transition-colors relative ${showNote ? "bg-white/30" : "bg-white/10"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showNote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
               </button>
             </div>
           </div>
@@ -700,7 +779,9 @@ export default function Clock() {
   const [showPicker, setShowPicker] = useState(false);
   const [restAlert, setRestAlert] = useState(false);
   const [prayerAlert, setPrayerAlert] = useState(false);
-  const alertedRestHour = useRef(-1);
+  const [lockedRestTime, setLockedRestTime] = useState<string | null>(null);
+  const [lockedPrayer, setLockedPrayer] = useState<{ label: string; scheduled: string } | null>(null);
+  const alertedRestHour = useRef("");
   const alertedPrayer = useRef("");
   const restAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prayerAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -817,19 +898,24 @@ export default function Clock() {
   useEffect(() => {
     if (!time) return;
 
-    // Rest alert: fires once at the top of each hour
-    if (time.getMinutes() === 0 && time.getSeconds() === 0) {
-      if (alertedRestHour.current !== time.getHours()) {
-        alertedRestHour.current = time.getHours();
+    // Rest alert: fires at each configured rest interval (HH:MM match, no seconds needed)
+    const currentHHMM = `${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`;
+    {
+      const [sH, sM] = restStart.split(":").map(Number);
+      const nowMins = time.getHours() * 60 + time.getMinutes();
+      const startMins = sH * 60 + sM;
+      const distMins = ((nowMins - startMins) % (24 * 60) + 24 * 60) % (24 * 60);
+      if (distMins % restInterval === 0 && alertedRestHour.current !== currentHHMM) {
+        alertedRestHour.current = currentHHMM;
+        setLockedRestTime(currentHHMM);
         setRestAlert(true);
         if (restAlertTimer.current) clearTimeout(restAlertTimer.current);
-        restAlertTimer.current = setTimeout(() => setRestAlert(false), 5 * 60 * 1000);
+        restAlertTimer.current = setTimeout(() => { setRestAlert(false); setLockedRestTime(null); }, 5 * 60 * 1000);
       }
     }
 
     // Prayer alert: fires once when current HH:MM matches a prayer time
     if (prayers) {
-      const currentHHMM = `${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`;
       const hit = PRAYER_KEYS.find((k) => {
         if (!prayers[k]) return false;
         const [h, m] = prayers[k]!.split(":").map(Number);
@@ -837,12 +923,13 @@ export default function Clock() {
       });
       if (hit && alertedPrayer.current !== currentHHMM) {
         alertedPrayer.current = currentHHMM;
+        setLockedPrayer({ label: PRAYER_LABELS[hit], scheduled: currentHHMM });
         setPrayerAlert(true);
         if (prayerAlertTimer.current) clearTimeout(prayerAlertTimer.current);
-        prayerAlertTimer.current = setTimeout(() => setPrayerAlert(false), 5 * 60 * 1000);
+        prayerAlertTimer.current = setTimeout(() => { setPrayerAlert(false); setLockedPrayer(null); }, 5 * 60 * 1000);
       }
     }
-  }, [time, prayers]);
+  }, [time, prayers, restStart, restInterval]);
 
   useEffect(() => {
     const today = new Date();
@@ -979,7 +1066,7 @@ export default function Clock() {
         />
       )}
 
-      <div className="relative flex flex-col w-full h-full" style={{ "--fc": hexToRgbStr(bgConfig.fontColor ?? "#ffffff"), color: "rgb(var(--fc))" } as React.CSSProperties}>
+      <div className="relative flex flex-col w-full h-full" style={{ "--fc": hexToRgbStr(bgConfig.fontColor ?? "#ffffff"), color: "rgb(var(--fc))", fontFamily: `var(--font-${bgConfig.fontFamily ?? "montserrat"})` } as React.CSSProperties}>
       {showVerseModal && verseData && (
         <VerseModal
           verse={verseData}
@@ -1033,7 +1120,7 @@ export default function Clock() {
 
       <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
         {/* Weather */}
-        <div onDoubleClick={() => setShowLocPicker(true)} className="w-full flex items-center flex-wrap justify-center gap-x-3 gap-y-1 cursor-pointer">
+        {bgConfig.showWeather !== false && <div onDoubleClick={() => setShowLocPicker(true)} className="w-full flex items-center flex-wrap justify-center gap-x-3 gap-y-1 cursor-pointer">
           {weatherData && weatherLoc ? (
             <>
               <WeatherIcon kind={getWeatherInfo(weatherData.code).kind} className="w-5 h-5" />
@@ -1045,7 +1132,7 @@ export default function Clock() {
           ) : (
             <span className="text-[11px] tracking-[0.25em] fc-20 uppercase">+ Set weather location</span>
           )}
-        </div>
+        </div>}
 
         {/* Time */}
         <div className="flex items-baseline tabular-nums">
@@ -1066,7 +1153,7 @@ export default function Clock() {
         </div>
 
         {/* Progress bar */}
-        <div className="w-3/4 sm:w-1/2 h-[2px] bg-white/10 rounded-full overflow-hidden mt-6">
+        <div className="w-full sm:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-6">
           <div
             className="h-full bg-white/70 rounded-full transition-all duration-1000 ease-linear"
             style={{ width: `${secondsPct}%` }}
@@ -1083,11 +1170,11 @@ export default function Clock() {
           {/* Quick Rest */}
           <div onDoubleClick={() => setShowRestConfig(true)} className="flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5 cursor-pointer">
             <div className="flex items-center gap-1.5">
-              {restAlert && <AlertDot onClear={() => setRestAlert(false)} />}
+              {restAlert && <AlertDot onClear={() => { setRestAlert(false); setLockedRestTime(null); }} />}
               <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Quick Rest</p>
             </div>
-            <p className={`text-2xl tracking-[0.1em] fc tabular-nums ${restAlert ? "font-bold" : "font-light"}`}>
-              {nextRestTime}
+            <p className={`text-2xl tracking-[0.1em] tabular-nums ${restAlert ? "font-bold text-red-400" : "font-light fc"}`}>
+              {lockedRestTime ?? nextRestTime}
             </p>
             <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">next break</p>
           </div>
@@ -1095,17 +1182,17 @@ export default function Clock() {
           {/* Prayer Time */}
           <div onDoubleClick={() => setShowPicker(true)} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
             <div className="flex items-center gap-2 flex-wrap justify-center">
-              {prayerAlert && <AlertDot onClear={() => setPrayerAlert(false)} />}
+              {prayerAlert && <AlertDot onClear={() => { setPrayerAlert(false); setLockedPrayer(null); }} />}
               <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
               <span className="text-[10px] tracking-[0.2em] fc-20 uppercase border border-white/5 rounded px-1.5 py-0.5">{zone}</span>
             </div>
             {nextPrayer ? (
               <>
-                <p className={`text-2xl tracking-[0.1em] fc tabular-nums ${prayerAlert ? "font-bold" : "font-light"}`}>
-                  {nextPrayer.scheduled}
+                <p className={`text-2xl tracking-[0.1em] tabular-nums ${prayerAlert ? "font-bold text-red-400" : "font-light fc"}`}>
+                  {(lockedPrayer ?? nextPrayer).scheduled}
                 </p>
                 <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">
-                  {nextPrayer.label}
+                  {(lockedPrayer ?? nextPrayer).label}
                 </p>
               </>
             ) : (
@@ -1125,7 +1212,7 @@ export default function Clock() {
             onClose={() => setEditingItem(null)}
           />
         )}
-        <div className="w-full mt-8">
+        {bgConfig.showNote !== false && <div className="w-full mt-8">
           <button
             onClick={() => setListOpen((o) => !o)}
             className="flex items-center justify-center w-full fc-25 hover:fc-40 transition-colors mb-2"
@@ -1162,13 +1249,15 @@ export default function Clock() {
               </button>
             </div>
           )}
-        </div>
+        </div>}
 
       </div>
-        <div className="flex flex-col items-center pb-6 pt-4 gap-1">
-          <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
-          {userIp && <span className="text-[9px] font-thin tracking-[0.2em] fc-25">{userIp}</span>}
-        </div>
+        {bgConfig.showCopyright !== false && (
+          <div className="flex flex-col items-center pb-6 pt-4 gap-1">
+            <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
+            {userIp && <span className="text-[9px] font-thin tracking-[0.2em] fc-25">{userIp}</span>}
+          </div>
+        )}
       </div>
     </>
   );
