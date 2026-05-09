@@ -133,7 +133,7 @@ function ZonePicker({
         </div>
 
         {/* Zone list */}
-        <div className="overflow-y-auto max-h-72">
+        <div className="overflow-y-auto max-h-72 scrollbar-thin">
           {filtered.map((z) => (
             <button
               key={z.code}
