@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 function AlertDot({ onClear }: { onClear: () => void }) {
   return (
-    <button onClick={onClear} className="mr-2 text-white/70 hover:text-white transition-colors shrink-0" title="Click to clear">
+    <button onClick={onClear} className="mr-2 fc-70 hover:fc transition-colors shrink-0" title="Click to clear">
       <svg className="w-3 h-3 animate-nudge-right" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
       </svg>
@@ -120,8 +120,8 @@ function ZonePicker({
       <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Select Zone</p>
-          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">Select Zone</p>
+          <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">
             ✕
           </button>
         </div>
@@ -134,7 +134,7 @@ function ZonePicker({
             placeholder="Search zone..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="w-full bg-transparent text-sm text-white/70 placeholder-white/20 outline-none tracking-wider"
+            className="w-full bg-transparent text-sm fc-70 placeholder-white/20 outline-none tracking-wider"
           />
         </div>
 
@@ -145,17 +145,17 @@ function ZonePicker({
               key={z.code}
               onClick={() => setInput(z.code)}
               className={`w-full flex items-center justify-between px-5 py-3 text-left hover:bg-white/5 transition-colors ${
-                input === z.code ? "bg-white/8 text-white" : "text-white/50"
+                input === z.code ? "bg-white/8 fc" : "fc-50"
               }`}
             >
               <span className="text-xs tracking-[0.2em]">{z.name}</span>
-              <span className={`text-xs font-light tracking-widest ${input === z.code ? "text-white/80" : "text-white/25"}`}>
+              <span className={`text-xs font-light tracking-widest ${input === z.code ? "fc-80" : "fc-25"}`}>
                 {z.code}
               </span>
             </button>
           ))}
           {filtered.length === 0 && (
-            <p className="px-5 py-4 text-xs text-white/25">No zones found.</p>
+            <p className="px-5 py-4 text-xs fc-25">No zones found.</p>
           )}
         </div>
 
@@ -163,13 +163,13 @@ function ZonePicker({
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
           <button
             onClick={onClose}
-            className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+            className="flex-1 py-2 text-xs tracking-[0.2em] fc-30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
           >
             Cancel
           </button>
           <button
             onClick={() => { onSave(input); onClose(); }}
-            className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
+            className="flex-1 py-2 text-xs tracking-[0.2em] fc bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
           >
             Save
           </button>
@@ -208,36 +208,36 @@ function RestConfigModal({
     >
       <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Quick Rest</p>
-          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">Quick Rest</p>
+          <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
         </div>
         <div className="flex flex-col gap-5 px-5 py-5">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Start Time</label>
+            <label className="text-[10px] tracking-[0.25em] fc-30 uppercase">Start Time</label>
             <input
               type="time"
               value={s}
               onChange={(e) => setS(e.target.value)}
-              className="bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm text-white/70 outline-none focus:border-white/25 transition-colors"
+              className="bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm fc-70 outline-none focus:border-white/25 transition-colors"
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Interval (minutes)</label>
+            <label className="text-[10px] tracking-[0.25em] fc-30 uppercase">Interval (minutes)</label>
             <input
               type="number"
               min="5"
               max="240"
               value={iv}
               onChange={(e) => setIv(e.target.value)}
-              className="bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm text-white/70 outline-none focus:border-white/25 transition-colors"
+              className="bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm fc-70 outline-none focus:border-white/25 transition-colors"
             />
           </div>
         </div>
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
-          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] fc-30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
           <button
             onClick={() => { onSave(s, Math.max(5, parseInt(iv) || 60)); onClose(); }}
-            className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
+            className="flex-1 py-2 text-xs tracking-[0.2em] fc bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
           >Save</button>
         </div>
       </div>
@@ -246,7 +246,7 @@ function RestConfigModal({
 }
 
 function WeatherIcon({ kind, className }: { kind: string; className?: string }) {
-  const cls = `${className ?? "w-5 h-5"} text-white/50`;
+  const cls = `${className ?? "w-5 h-5"} fc-50`;
   switch (kind) {
     case "sun":
       return (
@@ -367,8 +367,8 @@ function LocationPickerModal({
     >
       <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Weather Location</p>
-          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">Weather Location</p>
+          <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
         </div>
 
         <button
@@ -376,11 +376,11 @@ function LocationPickerModal({
           disabled={geoLoading}
           className="flex items-center gap-3 px-5 py-3 border-b border-white/5 text-left hover:bg-white/5 transition-colors w-full"
         >
-          <svg className="w-4 h-4 text-white/35 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 fc-35 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="3" />
             <path strokeLinecap="round" d="M12 2v3M12 19v3M2 12h3M19 12h3" />
           </svg>
-          <span className="text-xs tracking-[0.2em] text-white/45 uppercase">
+          <span className="text-xs tracking-[0.2em] fc-45 uppercase">
             {geoLoading ? "Locating…" : "Use current location"}
           </span>
         </button>
@@ -392,34 +392,34 @@ function LocationPickerModal({
             placeholder="Search city…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-sm text-white/70 placeholder-white/20 outline-none tracking-wider"
+            className="w-full bg-transparent text-sm fc-70 placeholder-white/20 outline-none tracking-wider"
           />
         </div>
 
         <div className="overflow-y-auto max-h-60">
-          {searching && <p className="px-5 py-3 text-xs text-white/25 tracking-widest">Searching…</p>}
+          {searching && <p className="px-5 py-3 text-xs fc-25 tracking-widest">Searching…</p>}
           {!searching && results.map((loc, i) => (
             <button
               key={i}
               onClick={() => { onSave(loc); onClose(); }}
               className={`w-full text-left px-5 py-3 text-xs tracking-[0.15em] hover:bg-white/5 transition-colors ${
                 current?.lat === loc.lat && current?.lon === loc.lon
-                  ? "bg-white/8 text-white"
-                  : "text-white/50"
+                  ? "bg-white/8 fc"
+                  : "fc-50"
               }`}
             >
               {loc.name}
             </button>
           ))}
           {!searching && query.trim().length >= 2 && results.length === 0 && (
-            <p className="px-5 py-3 text-xs text-white/25">No results.</p>
+            <p className="px-5 py-3 text-xs fc-25">No results.</p>
           )}
         </div>
 
         <div className="px-5 py-4 border-t border-white/5">
           <button
             onClick={onClose}
-            className="w-full py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+            className="w-full py-2 text-xs tracking-[0.2em] fc-30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
           >
             Cancel
           </button>
@@ -429,14 +429,44 @@ function LocationPickerModal({
   );
 }
 
+function hexToRgbStr(hex: string): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `${r} ${g} ${b}`;
+}
+
 type BgConfig = {
   color: string;
+  fontColor: string;
+  showQuran: boolean;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a" };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false };
+
+function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">{label}</label>
+      <div className="flex gap-2 flex-wrap justify-center">
+        {presets.map((c) => (
+          <button key={c} onClick={() => onChange(c)} style={{ background: c }}
+            className={`w-7 h-7 rounded-md border transition-colors ${value === c ? "border-white/50" : "border-white/10 hover:border-white/30"}`}
+          />
+        ))}
+      </div>
+      <p className="text-[10px] tracking-[0.25em] text-white/20 uppercase">Or pick your own</p>
+      <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-14 h-14 rounded-xl bg-transparent cursor-pointer" />
+      <span className="text-xs text-white/35 tracking-widest font-mono">{value}</span>
+    </div>
+  );
+}
 
 function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave: (c: BgConfig) => void; onClose: () => void }) {
-  const [color, setColor] = useState(config.color);
+  const [color, setColor] = useState(config.color ?? "#0a0a0a");
+  const [fontColor, setFontColor] = useState(config.fontColor ?? "#ffffff");
+  const [showQuran, setShowQuran] = useState(config.showQuran ?? true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -445,7 +475,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran }); onClose(); };
 
   return (
     <div
@@ -454,32 +484,35 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
       <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-10">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Background</p>
+          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Appearance</p>
           <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex flex-col items-center gap-4 px-5 py-8">
-          <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Color</label>
-          <div className="flex gap-2 flex-wrap justify-center">
-            {["#0a0a0a", "#0f172a", "#0d1117", "#1a0a2e", "#0a1628", "#1a1a0a"].map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                style={{ background: c }}
-                className={`w-7 h-7 rounded-md border transition-colors ${color === c ? "border-white/50" : "border-white/10 hover:border-white/30"}`}
-              />
-            ))}
-          </div>
-          <p className="text-[10px] tracking-[0.25em] text-white/25 uppercase">Or select your own color</p>
-          <input
-            type="color"
+        <div className="flex flex-col gap-6 px-5 py-6">
+          <ColorSection
+            label="Background"
             value={color}
-            onChange={(e) => setColor(e.target.value)}
-            className="w-14 h-14 rounded-xl bg-transparent cursor-pointer"
+            onChange={setColor}
+            presets={["#0a0a0a", "#0f172a", "#0d1117", "#1a0a2e", "#0a1628", "#1a1a0a"]}
           />
-          <span className="text-xs text-white/40 tracking-widest font-mono">{color}</span>
+          <div className="border-t border-white/5" />
+          <ColorSection
+            label="Text"
+            value={fontColor}
+            onChange={setFontColor}
+            presets={["#ffffff", "#fef3c7", "#bfdbfe", "#bbf7d0", "#fecdd3", "#e9d5ff"]}
+          />
+          <div className="border-t border-white/5" />
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Show Quran</p>
+            <button
+              onClick={() => setShowQuran((v) => !v)}
+              className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
@@ -520,8 +553,8 @@ function ListItemModal({
     >
       <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">{isEdit ? "Edit Item" : "New Item"}</p>
-          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">{isEdit ? "Edit Item" : "New Item"}</p>
+          <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
         </div>
         <div className="px-5 py-4">
           <input
@@ -531,12 +564,69 @@ function ListItemModal({
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
-            className="w-full bg-transparent text-sm text-white/70 placeholder-white/20 outline-none tracking-wider"
+            className="w-full bg-transparent text-sm fc-70 placeholder-white/20 outline-none tracking-wider"
           />
         </div>
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
-          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
-          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">{isEdit ? "Save" : "Add"}</button>
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] fc-30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
+          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] fc bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">{isEdit ? "Save" : "Add"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VerseModal({
+  verse,
+  verseNo,
+  onNext,
+  onClose,
+}: {
+  verse: { surah: { englishName: string; englishNameTranslation: string; revelationType: string }; numberInSurah: number; text: string };
+  verseNo: number;
+  onNext: () => void;
+  onClose: () => void;
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const [arabicText, setArabicText] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    fetch(`https://api.alquran.cloud/v1/ayah/${verseNo}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.data) setArabicText(d.data.text); })
+      .catch(() => {});
+  }, [verseNo]);
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <div>
+            <p className="text-xs tracking-[0.3em] text-white/40 uppercase">{verse.surah.englishName} · {verse.numberInSurah}</p>
+            <p className="text-[10px] tracking-[0.2em] text-white/25 mt-0.5">{verse.surah.englishNameTranslation} · {verse.surah.revelationType}</p>
+          </div>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+        <div className="flex flex-col gap-4 px-5 py-6">
+          {arabicText && (
+            <p className="text-3xl text-white/70 leading-loose text-right" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{arabicText}</p>
+          )}
+          <div className="border-t border-white/5" />
+          <p className="text-sm text-white/55 leading-relaxed italic">{verse.text}</p>
+        </div>
+        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Close</button>
+          <button onClick={onNext} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">Next verse</button>
         </div>
       </div>
     </div>
@@ -567,6 +657,10 @@ export default function Clock() {
   const [editingItem, setEditingItem] = useState<{ id: string; text: string } | null>(null);
   const [bgConfig, setBgConfig] = useState<BgConfig>(DEFAULT_BG);
   const [showBgSettings, setShowBgSettings] = useState(false);
+  const [showVerseModal, setShowVerseModal] = useState(false);
+  const [verseNo, setVerseNo] = useState(1);
+  const [verseData, setVerseData] = useState<{ surah: { englishName: string; englishNameTranslation: string; revelationType: string }; numberInSurah: number; text: string } | null>(null);
+  const [verseLoading, setVerseLoading] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("solat-zone");
@@ -580,7 +674,26 @@ export default function Clock() {
     if (savedLoc) setWeatherLoc(JSON.parse(savedLoc));
     const savedBg = localStorage.getItem("bg-config");
     if (savedBg) setBgConfig(JSON.parse(savedBg));
+    const savedVerse = localStorage.getItem("quran-verse");
+    const next = savedVerse ? (parseInt(savedVerse) % 6236) + 1 : 1;
+    setVerseNo(next);
+    localStorage.setItem("quran-verse", String(next));
   }, []);
+
+  useEffect(() => {
+    setVerseLoading(true);
+    fetch(`https://api.alquran.cloud/v1/ayah/${verseNo}/en.pickthall`)
+      .then((r) => r.json())
+      .then((d) => { if (d.data) setVerseData(d.data); })
+      .catch(() => {})
+      .finally(() => setVerseLoading(false));
+  }, [verseNo]);
+
+  const nextVerse = () => {
+    const next = verseNo < 6236 ? verseNo + 1 : 1;
+    setVerseNo(next);
+    localStorage.setItem("quran-verse", String(next));
+  };
 
   const saveBgConfig = (c: BgConfig) => {
     setBgConfig(c);
@@ -751,17 +864,6 @@ export default function Clock() {
       <div className="fixed inset-0 -z-10 transition-colors duration-500" style={bgStyle} />
 
       {/* Settings button */}
-      <button
-        onClick={() => setShowBgSettings(true)}
-        className="fixed top-4 right-4 z-30 text-white/20 hover:text-white/50 transition-colors"
-        title="Background settings"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3" />
-          <path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-        </svg>
-      </button>
-
       {showBgSettings && (
         <BgSettingsModal config={bgConfig} onSave={saveBgConfig} onClose={() => setShowBgSettings(false)} />
       )}
@@ -789,19 +891,54 @@ export default function Clock() {
         />
       )}
 
-      <div className="flex flex-col items-center gap-4 select-none w-full max-w-2xl px-4 sm:px-6">
+      <div className="relative flex flex-col w-full h-full" style={{ "--fc": hexToRgbStr(bgConfig.fontColor ?? "#ffffff"), color: "rgb(var(--fc))" } as React.CSSProperties}>
+      {showVerseModal && verseData && (
+        <VerseModal
+          verse={verseData}
+          verseNo={verseNo}
+          onNext={nextVerse}
+          onClose={() => setShowVerseModal(false)}
+        />
+      )}
+
+      {/* Top bar */}
+      <div className="flex items-center gap-3 w-full pt-4 px-4">
+        {bgConfig.showQuran !== false && (
+          <button
+            onClick={() => setShowVerseModal(true)}
+            disabled={!verseData}
+            className="min-w-0 text-left max-w-[75vw]"
+          >
+            <span className="block truncate text-[11px] fc-35 tracking-[0.1em]">
+              {verseLoading ? "Loading…" : verseData ? `${verseData.surah.englishName} · ${verseData.numberInSurah} — ${verseData.text}` : ""}
+            </span>
+          </button>
+        )}
+        <button
+          onClick={() => setShowBgSettings(true)}
+          className="shrink-0 fc-20 hover:fc-50 transition-colors ml-auto"
+          title="Background settings"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
         {/* Weather */}
         <div onDoubleClick={() => setShowLocPicker(true)} className="flex items-center flex-wrap justify-center sm:justify-start gap-x-3 gap-y-1 cursor-pointer">
           {weatherData && weatherLoc ? (
             <>
               <WeatherIcon kind={getWeatherInfo(weatherData.code).kind} className="w-5 h-5" />
-              <span className="text-2xl font-light text-white/75 tabular-nums leading-none">{weatherData.temp}°</span>
-              <span className="text-[11px] tracking-[0.25em] text-white/35 uppercase">{getWeatherInfo(weatherData.code).label}</span>
-              <span className="text-white/10 text-xs">·</span>
-              <span className="text-[11px] tracking-[0.15em] text-white/25 uppercase">{weatherLoc.name}</span>
+              <span className="text-2xl font-light fc-75 tabular-nums leading-none">{weatherData.temp}°</span>
+              <span className="text-[11px] tracking-[0.25em] fc-35 uppercase">{getWeatherInfo(weatherData.code).label}</span>
+              <span className="fc-10 text-xs">·</span>
+              <span className="text-[11px] tracking-[0.15em] fc-25 uppercase">{weatherLoc.name}</span>
             </>
           ) : (
-            <span className="text-[11px] tracking-[0.25em] text-white/20 uppercase">+ Set weather location</span>
+            <span className="text-[11px] tracking-[0.25em] fc-20 uppercase">+ Set weather location</span>
           )}
         </div>
 
@@ -812,10 +949,10 @@ export default function Clock() {
               key={i}
               className={`inline-block text-center text-[12vw] leading-none ${
                 char === ":"
-                  ? "w-[4vw] font-light text-white/50"
+                  ? "w-[4vw] font-light fc-50"
                   : i >= 6
-                  ? "w-[9vw] font-bold text-white/60"
-                  : "w-[9vw] font-bold text-white/90"
+                  ? "w-[9vw] font-bold fc-60"
+                  : "w-[9vw] font-bold fc-90"
               }`}
             >
               {char}
@@ -832,7 +969,7 @@ export default function Clock() {
         </div>
 
         {/* Date */}
-        <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest text-white uppercase xl:mt-6 2xl:mt-10">
+        <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest fc uppercase xl:mt-6 2xl:mt-10">
           {dateLabel}
         </p>
 
@@ -842,37 +979,37 @@ export default function Clock() {
           <div onDoubleClick={() => setShowRestConfig(true)} className="flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5 cursor-pointer">
             <div className="flex items-center gap-1.5">
               {restAlert && <AlertDot onClear={() => setRestAlert(false)} />}
-              <p className="text-[12px] font-light tracking-[0.3em] text-white/35 uppercase">Quick Rest</p>
+              <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Quick Rest</p>
             </div>
-            <p className={`text-2xl tracking-[0.1em] text-white tabular-nums ${restAlert ? "font-bold" : "font-light"}`}>
+            <p className={`text-2xl tracking-[0.1em] fc tabular-nums ${restAlert ? "font-bold" : "font-light"}`}>
               {nextRestTime}
             </p>
-            <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">next break</p>
+            <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">next break</p>
           </div>
 
           {/* Prayer Time */}
           <div className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8">
             <div className="flex items-center gap-2 flex-wrap justify-center">
               {prayerAlert && <AlertDot onClear={() => setPrayerAlert(false)} />}
-              <p className="text-[12px] font-light tracking-[0.3em] text-white/35 uppercase">Waktu Solat</p>
+              <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
               <button
                 onClick={() => setShowPicker(true)}
-                className="text-[10px] tracking-[0.2em] text-white/20 hover:text-white/50 uppercase transition-colors border border-white/5 hover:border-white/25 rounded px-1.5 py-0.5"
+                className="text-[10px] tracking-[0.2em] fc-20 hover:fc-50 uppercase transition-colors border border-white/5 hover:border-white/25 rounded px-1.5 py-0.5"
               >
                 {zone}
               </button>
             </div>
             {nextPrayer ? (
               <>
-                <p className={`text-2xl tracking-[0.1em] text-white tabular-nums ${prayerAlert ? "font-bold" : "font-light"}`}>
+                <p className={`text-2xl tracking-[0.1em] fc tabular-nums ${prayerAlert ? "font-bold" : "font-light"}`}>
                   {nextPrayer.scheduled}
                 </p>
-                <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">
+                <p className="text-[10px] tracking-[0.2em] fc-40 uppercase">
                   {nextPrayer.label}
                 </p>
               </>
             ) : (
-              <p className="text-2xl font-light text-white/20">—</p>
+              <p className="text-2xl font-light fc-20">—</p>
             )}
           </div>
         </div>
@@ -891,7 +1028,7 @@ export default function Clock() {
         <div className="w-full mt-8">
           <button
             onClick={() => setListOpen((o) => !o)}
-            className="flex items-center justify-center w-full text-white/25 hover:text-white/40 transition-colors mb-2"
+            className="flex items-center justify-center w-full fc-25 hover:fc-40 transition-colors mb-2"
           >
             <svg
               className={`w-3 h-3 transition-transform duration-200 ${listOpen ? "rotate-180" : "rotate-0"}`}
@@ -904,10 +1041,10 @@ export default function Clock() {
             <div className="w-full flex flex-col gap-1">
               {listItems.map((item) => (
                 <div key={item.id} onDoubleClick={() => setEditingItem(item)} className="flex items-center gap-3 px-4 py-2.5 border border-white/8 rounded-lg cursor-pointer">
-                  <span className="flex-1 text-[12px] tracking-[0.1em] text-white/45">{item.text}</span>
+                  <span className="flex-1 text-[12px] tracking-[0.1em] fc-45">{item.text}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeListItem(item.id); }}
-                    className="text-white/20 hover:text-white/55 transition-colors shrink-0"
+                    className="fc-20 hover:fc-55 transition-colors shrink-0"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -917,7 +1054,7 @@ export default function Clock() {
               ))}
               <button
                 onClick={() => setShowListAdd(true)}
-                className="flex items-center justify-center w-full py-2.5 text-white/20 hover:text-white/45 transition-colors"
+                className="flex items-center justify-center w-full py-2.5 fc-20 hover:fc-45 transition-colors"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
@@ -927,7 +1064,8 @@ export default function Clock() {
           )}
         </div>
 
-        <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="fixed bottom-4 text-[10px] tracking-[0.25em] text-white/70 hover:text-white/35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
+      </div>
+        <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="py-6 text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors text-center w-full block">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
       </div>
     </>
   );

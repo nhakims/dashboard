@@ -3,12 +3,32 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --fc: 255 255 255;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-montserrat);
+}
+
+@layer utilities {
+  .fc     { color: rgb(var(--fc)); }
+  .fc-90  { color: rgb(var(--fc) / 0.90); }
+  .fc-80  { color: rgb(var(--fc) / 0.80); }
+  .fc-75  { color: rgb(var(--fc) / 0.75); }
+  .fc-70  { color: rgb(var(--fc) / 0.70); }
+  .fc-60  { color: rgb(var(--fc) / 0.60); }
+  .fc-55  { color: rgb(var(--fc) / 0.55); }
+  .fc-50  { color: rgb(var(--fc) / 0.50); }
+  .fc-45  { color: rgb(var(--fc) / 0.45); }
+  .fc-40  { color: rgb(var(--fc) / 0.40); }
+  .fc-35  { color: rgb(var(--fc) / 0.35); }
+  .fc-30  { color: rgb(var(--fc) / 0.30); }
+  .fc-25  { color: rgb(var(--fc) / 0.25); }
+  .fc-20  { color: rgb(var(--fc) / 0.20); }
+  .fc-15  { color: rgb(var(--fc) / 0.15); }
+  .fc-10  { color: rgb(var(--fc) / 0.10); }
 }
 
 @keyframes nudge-right {
@@ -20,7 +40,10 @@
   animation: nudge-right 0.9s ease-in-out infinite;
 }
 
-body, input, button, select, textarea {
+body {
   color: var(--foreground);
+}
+
+body, input, button, select, textarea {
   font-family: var(--font-montserrat), sans-serif;
 }
