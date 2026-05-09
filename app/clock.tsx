@@ -77,14 +77,6 @@ function parseHHMM(raw: string): number {
   return h * 3600 + m * 60 + s;
 }
 
-function formatDuration(secs: number): string {
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = secs % 60;
-  const mm = String(m).padStart(2, "0");
-  const ss = String(s).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-}
 
 function ZonePicker({
   current,
@@ -619,10 +611,10 @@ function VerseModal({
         </div>
         <div className="flex flex-col gap-4 px-5 py-6">
           {arabicText && (
-            <p className="text-3xl text-white/70 leading-loose text-right" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{arabicText}</p>
+            <p className="text-3xl text-white/90 leading-loose text-right" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{arabicText}</p>
           )}
           <div className="border-t border-white/5" />
-          <p className="text-sm text-white/55 leading-relaxed italic">{verse.text}</p>
+          <p className="text-sm text-white/90 leading-relaxed italic">{verse.text}</p>
         </div>
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
           <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Close</button>
@@ -646,7 +638,6 @@ export default function Clock() {
   const prayerAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [listItems, setListItems] = useState<{ id: string; text: string }[]>([]);
   const [listOpen, setListOpen] = useState(false);
-  const [listInput, setListInput] = useState("");
   const [restStart, setRestStart] = useState("08:30");
   const [restInterval, setRestInterval] = useState(60);
   const [showRestConfig, setShowRestConfig] = useState(false);
@@ -909,7 +900,7 @@ export default function Clock() {
             disabled={!verseData}
             className="min-w-0 text-left max-w-[75vw]"
           >
-            <span className="block truncate text-[11px] fc-35 tracking-[0.1em]">
+            <span className="block truncate text-[11px] fc-70 tracking-[0.1em]">
               {verseLoading ? "Loading…" : verseData ? `${verseData.surah.englishName} · ${verseData.numberInSurah} — ${verseData.text}` : ""}
             </span>
           </button>
@@ -928,14 +919,14 @@ export default function Clock() {
 
       <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
         {/* Weather */}
-        <div onDoubleClick={() => setShowLocPicker(true)} className="flex items-center flex-wrap justify-center sm:justify-start gap-x-3 gap-y-1 cursor-pointer">
+        <div onDoubleClick={() => setShowLocPicker(true)} className="w-full flex items-center flex-wrap justify-center gap-x-3 gap-y-1 cursor-pointer">
           {weatherData && weatherLoc ? (
             <>
               <WeatherIcon kind={getWeatherInfo(weatherData.code).kind} className="w-5 h-5" />
               <span className="text-2xl font-light fc-75 tabular-nums leading-none">{weatherData.temp}°</span>
               <span className="text-[11px] tracking-[0.25em] fc-35 uppercase">{getWeatherInfo(weatherData.code).label}</span>
-              <span className="fc-10 text-xs">·</span>
-              <span className="text-[11px] tracking-[0.15em] fc-25 uppercase">{weatherLoc.name}</span>
+              <span className="fc-10 text-xs hidden sm:inline">·</span>
+              <span className="text-[11px] tracking-[0.15em] fc-25 uppercase w-full text-center sm:w-auto">{weatherLoc.name}</span>
             </>
           ) : (
             <span className="text-[11px] tracking-[0.25em] fc-20 uppercase">+ Set weather location</span>
