@@ -111,7 +111,7 @@ function ZonePicker({
       className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <p className="text-xs tracking-[0.3em] fc-40 uppercase">Select Zone</p>
@@ -359,7 +359,7 @@ function LocationPickerModal({
       className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <p className="text-xs tracking-[0.3em] fc-40 uppercase">Weather Location</p>
           <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
@@ -772,7 +772,7 @@ function VerseModal({
       className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <div>
             <p className="text-xs tracking-[0.3em] text-white/40 uppercase">{verse.surah.englishName} · {verse.numberInSurah}</p>
@@ -847,7 +847,7 @@ function MediaModal({
       className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <div>
             <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Media Library</p>
@@ -1025,7 +1025,7 @@ function QuranPlayerModal({
       className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
+      <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <div>
             <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Quran Player</p>
@@ -1042,7 +1042,7 @@ function QuranPlayerModal({
             </p>
             {currentSurah ? (
               <>
-                <p className="text-2xl fc-90 tracking-wide" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                <p className="text-3xl fc-90 tracking-wide m-5" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
                   {currentSurah.name}
                 </p>
                 <p className="text-xs fc-50 tracking-[0.15em] mt-1">{currentSurah.englishName}</p>
@@ -1940,11 +1940,11 @@ export default function Clock() {
           <div className="w-full flex flex-col items-center gap-2 mt-10 pt-4">
             <button 
               onClick={() => setShowMediaModal(true)}
-              className="flex items-center gap-3 px-4 py-2 rounded-none bg-white/[0.03] border-2 border-white/25 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
+              className="flex items-center gap-3 px-4 py-2 rounded rounded-1 bg-white/[0.03] border-0 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
             >
               <div
                 onClick={(e) => { e.stopPropagation(); if (tracks.length > 0) togglePlay(); }}
-                className={`w-8 h-8 flex items-center justify-center bg-[#3a3a3a] border-2 border-white/25 rounded-none shrink-0 group-hover:bg-[#4a4a4a] ${tracks.length === 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                className={`w-8 h-8 flex items-center justify-center bg-white/5 border-0 rounded rounded-1 shrink-0 group-hover:bg-white/10 ${tracks.length === 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
               >
                 {isPlaying ? (
                   <svg className="w-4 h-4 fc-60" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -1967,11 +1967,11 @@ export default function Clock() {
           <div className={`w-full flex flex-col items-center gap-2 ${bgConfig.showPlayer !== false ? "mt-2" : "mt-10"}`}>
             <button 
               onClick={() => setShowQuranModal(true)}
-              className="flex items-center gap-3 px-4 py-2 rounded-none bg-white/[0.03] border-2 border-white/25 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
+              className="flex items-center gap-3 px-4 py-2 rounded bg-white/[0.03] border-0 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
             >
               <div 
                 onClick={(e) => { e.stopPropagation(); toggleQuranPlay(); }}
-                className="w-8 h-8 flex items-center justify-center bg-white/5 border-2 border-white/25 rounded-none shrink-0 group-hover:bg-white/10"
+                className="w-8 h-8 flex items-center justify-center bg-white/5 border-0 rounded shrink-0 group-hover:bg-white/10"
               >
                 {isQuranPlaying ? (
                   <svg className="w-4 h-4 fc-60" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -1983,7 +1983,7 @@ export default function Clock() {
                 <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Quran Streaming</p>
                 {currentSurah ? (
                   <>
-                    <p className="text-base fc-80 leading-tight" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{currentSurah.name}</p>
+                    <p className="text-base fc-80 leading-tight my-2" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{currentSurah.name}</p>
                     <p className="text-[10px] fc-40 tracking-wide truncate">{currentSurah.englishName}</p>
                   </>
                 ) : (
