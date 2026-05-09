@@ -114,7 +114,7 @@ function ZonePicker({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
       <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
@@ -203,7 +203,7 @@ function RestConfigModal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
       <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
@@ -362,7 +362,7 @@ function LocationPickerModal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
       <div className="w-full max-w-md bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
@@ -429,6 +429,121 @@ function LocationPickerModal({
   );
 }
 
+type BgConfig = {
+  color: string;
+};
+
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a" };
+
+function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave: (c: BgConfig) => void; onClose: () => void }) {
+  const [color, setColor] = useState(config.color);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const submit = () => { onSave({ color }); onClose(); };
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-start justify-end p-4 bg-black/60 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-10">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Background</p>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+
+        <div className="flex flex-col gap-3 px-5 py-5">
+          <label className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Color</label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-10 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer"
+            />
+            <span className="text-xs text-white/40 tracking-widest font-mono">{color}</span>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {["#0a0a0a", "#0f172a", "#0d1117", "#1a0a2e", "#0a1628", "#1a1a0a"].map((c) => (
+              <button
+                key={c}
+                onClick={() => setColor(c)}
+                style={{ background: c }}
+                className={`w-7 h-7 rounded-md border transition-colors ${color === c ? "border-white/50" : "border-white/10 hover:border-white/30"}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
+          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ListItemModal({
+  initial,
+  onSave,
+  onClose,
+}: {
+  initial?: string;
+  onSave: (text: string) => void;
+  onClose: () => void;
+}) {
+  const [text, setText] = useState(initial ?? "");
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const isEdit = !!initial;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const submit = () => { if (text.trim()) { onSave(text); onClose(); } };
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">{isEdit ? "Edit Item" : "New Item"}</p>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+        <div className="px-5 py-4">
+          <input
+            autoFocus
+            type="text"
+            placeholder="Type something…"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            className="w-full bg-transparent text-sm text-white/70 placeholder-white/20 outline-none tracking-wider"
+          />
+        </div>
+        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
+          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">{isEdit ? "Save" : "Add"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Clock() {
   const [time, setTime] = useState<Date | null>(null);
   const [zone, setZone] = useState("WLY01");
@@ -438,24 +553,40 @@ export default function Clock() {
   const [prayerAlert, setPrayerAlert] = useState(false);
   const alertedRestHour = useRef(-1);
   const alertedPrayer = useRef("");
-  const [note, setNote] = useState("");
-  const [noteOpen, setNoteOpen] = useState(false);
+  const restAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prayerAlertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [listItems, setListItems] = useState<{ id: string; text: string }[]>([]);
+  const [listOpen, setListOpen] = useState(false);
+  const [listInput, setListInput] = useState("");
   const [restStart, setRestStart] = useState("08:30");
   const [restInterval, setRestInterval] = useState(60);
   const [showRestConfig, setShowRestConfig] = useState(false);
   const [weatherLoc, setWeatherLoc] = useState<WeatherLoc | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [showLocPicker, setShowLocPicker] = useState(false);
+  const [showListAdd, setShowListAdd] = useState(false);
+  const [editingItem, setEditingItem] = useState<{ id: string; text: string } | null>(null);
+  const [bgConfig, setBgConfig] = useState<BgConfig>(DEFAULT_BG);
+  const [showBgSettings, setShowBgSettings] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("solat-zone");
     if (saved) setZone(saved);
-    setNote(localStorage.getItem("clock-note") ?? "");
+    const savedList = localStorage.getItem("clock-list");
+    const defaultList = [{ id: "default", text: "Some text here" }];
+    setListItems(savedList ? JSON.parse(savedList) : defaultList);
     setRestStart(localStorage.getItem("rest-start") ?? "08:30");
     setRestInterval(parseInt(localStorage.getItem("rest-interval") ?? "60"));
     const savedLoc = localStorage.getItem("weather-loc");
     if (savedLoc) setWeatherLoc(JSON.parse(savedLoc));
+    const savedBg = localStorage.getItem("bg-config");
+    if (savedBg) setBgConfig(JSON.parse(savedBg));
   }, []);
+
+  const saveBgConfig = (c: BgConfig) => {
+    setBgConfig(c);
+    localStorage.setItem("bg-config", JSON.stringify(c));
+  };
 
   const saveRestConfig = (start: string, interval: number) => {
     setRestStart(start);
@@ -463,6 +594,19 @@ export default function Clock() {
     localStorage.setItem("rest-start", start);
     localStorage.setItem("rest-interval", String(interval));
   };
+
+  const saveList = (items: { id: string; text: string }[]) => {
+    setListItems(items);
+    localStorage.setItem("clock-list", JSON.stringify(items));
+  };
+  const addListItem = (text: string) => {
+    if (!text.trim()) return;
+    saveList([...listItems, { id: Date.now().toString(), text: text.trim() }]);
+  };
+  const editListItem = (id: string, text: string) => {
+    saveList(listItems.map((i) => (i.id === id ? { ...i, text: text.trim() } : i)));
+  };
+  const removeListItem = (id: string) => saveList(listItems.filter((i) => i.id !== id));
 
   useEffect(() => {
     setTime(new Date());
@@ -478,6 +622,8 @@ export default function Clock() {
       if (alertedRestHour.current !== time.getHours()) {
         alertedRestHour.current = time.getHours();
         setRestAlert(true);
+        if (restAlertTimer.current) clearTimeout(restAlertTimer.current);
+        restAlertTimer.current = setTimeout(() => setRestAlert(false), 5 * 60 * 1000);
       }
     }
 
@@ -492,6 +638,8 @@ export default function Clock() {
       if (hit && alertedPrayer.current !== currentHHMM) {
         alertedPrayer.current = currentHHMM;
         setPrayerAlert(true);
+        if (prayerAlertTimer.current) clearTimeout(prayerAlertTimer.current);
+        prayerAlertTimer.current = setTimeout(() => setPrayerAlert(false), 5 * 60 * 1000);
       }
     }
   }, [time, prayers]);
@@ -596,8 +744,29 @@ export default function Clock() {
     }
   }
 
+  const bgStyle = { backgroundColor: bgConfig.color };
+
   return (
     <>
+      {/* Background layer */}
+      <div className="fixed inset-0 -z-10 transition-colors duration-500" style={bgStyle} />
+
+      {/* Settings button */}
+      <button
+        onClick={() => setShowBgSettings(true)}
+        className="fixed top-4 right-4 z-30 text-white/20 hover:text-white/50 transition-colors"
+        title="Background settings"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <path strokeLinecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+        </svg>
+      </button>
+
+      {showBgSettings && (
+        <BgSettingsModal config={bgConfig} onSave={saveBgConfig} onClose={() => setShowBgSettings(false)} />
+      )}
+
       {showPicker && (
         <ZonePicker
           current={zone}
@@ -621,29 +790,19 @@ export default function Clock() {
         />
       )}
 
-      <div className="flex flex-col items-center gap-4 select-none">
+      <div className="flex flex-col items-center gap-4 select-none w-full max-w-2xl px-4 sm:px-6">
         {/* Weather */}
-        <div className="flex items-center gap-3 h-8">
+        <div onDoubleClick={() => setShowLocPicker(true)} className="flex items-center flex-wrap justify-center sm:justify-start gap-x-3 gap-y-1 cursor-pointer">
           {weatherData && weatherLoc ? (
             <>
               <WeatherIcon kind={getWeatherInfo(weatherData.code).kind} className="w-5 h-5" />
               <span className="text-2xl font-light text-white/75 tabular-nums leading-none">{weatherData.temp}°</span>
               <span className="text-[11px] tracking-[0.25em] text-white/35 uppercase">{getWeatherInfo(weatherData.code).label}</span>
               <span className="text-white/10 text-xs">·</span>
-              <button
-                onClick={() => setShowLocPicker(true)}
-                className="text-[11px] tracking-[0.15em] text-white/25 hover:text-white/50 transition-colors uppercase"
-              >
-                {weatherLoc.name}
-              </button>
+              <span className="text-[11px] tracking-[0.15em] text-white/25 uppercase">{weatherLoc.name}</span>
             </>
           ) : (
-            <button
-              onClick={() => setShowLocPicker(true)}
-              className="text-[11px] tracking-[0.25em] text-white/20 hover:text-white/35 transition-colors uppercase"
-            >
-              + Set weather location
-            </button>
+            <span className="text-[11px] tracking-[0.25em] text-white/20 uppercase">+ Set weather location</span>
           )}
         </div>
 
@@ -666,7 +825,7 @@ export default function Clock() {
         </div>
 
         {/* Progress bar */}
-        <div className="w-1/2 h-[2px] bg-white/10 rounded-full overflow-hidden mt-6">
+        <div className="w-3/4 sm:w-1/2 h-[2px] bg-white/10 rounded-full overflow-hidden mt-6">
           <div
             className="h-full bg-white/70 rounded-full transition-all duration-1000 ease-linear"
             style={{ width: `${secondsPct}%` }}
@@ -674,14 +833,14 @@ export default function Clock() {
         </div>
 
         {/* Date */}
-        <p className="text-xl font-bold tracking-widest text-white uppercase xl:mt-6 2xl:mt-10">
+        <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest text-white uppercase xl:mt-6 2xl:mt-10">
           {dateLabel}
         </p>
 
         {/* Bottom info row */}
-        <div className="flex w-full mt-6">
+        <div className="flex flex-col sm:flex-row w-full mt-6">
           {/* Quick Rest */}
-          <div onDoubleClick={() => setShowRestConfig(true)} className="flex-1 flex flex-col items-center gap-2 pr-8 border-r border-white/5 cursor-pointer">
+          <div onDoubleClick={() => setShowRestConfig(true)} className="flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5 cursor-pointer">
             <div className="flex items-center gap-1.5">
               {restAlert && <AlertDot onClear={() => setRestAlert(false)} />}
               <p className="text-[12px] font-light tracking-[0.3em] text-white/35 uppercase">Quick Rest</p>
@@ -693,8 +852,8 @@ export default function Clock() {
           </div>
 
           {/* Prayer Time */}
-          <div className="flex-1 flex flex-col items-center gap-2 pl-8">
-            <div className="flex items-center gap-2">
+          <div className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8">
+            <div className="flex items-center gap-2 flex-wrap justify-center">
               {prayerAlert && <AlertDot onClear={() => setPrayerAlert(false)} />}
               <p className="text-[12px] font-light tracking-[0.3em] text-white/35 uppercase">Waktu Solat</p>
               <button
@@ -719,32 +878,52 @@ export default function Clock() {
           </div>
         </div>
 
-        {/* Note */}
+        {/* List */}
+        {showListAdd && (
+          <ListItemModal onSave={addListItem} onClose={() => setShowListAdd(false)} />
+        )}
+        {editingItem && (
+          <ListItemModal
+            initial={editingItem.text}
+            onSave={(text) => editListItem(editingItem.id, text)}
+            onClose={() => setEditingItem(null)}
+          />
+        )}
         <div className="w-full mt-8">
           <button
-            onClick={() => setNoteOpen((o) => !o)}
-            className="flex items-center justify-center w-full text-white/25 hover:text-white/40 transition-colors mb-1"
+            onClick={() => setListOpen((o) => !o)}
+            className="flex items-center justify-center w-full text-white/25 hover:text-white/40 transition-colors mb-2"
           >
             <svg
-              className={`w-3 h-3 transition-transform duration-200 ${noteOpen ? "rotate-180" : "rotate-0"}`}
-              fill="none" stroke="currentColor" strokeWidth="2.5"
-              viewBox="0 0 24 24"
+              className={`w-3 h-3 transition-transform duration-200 ${listOpen ? "rotate-180" : "rotate-0"}`}
+              fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 9l7 7 7-7" />
             </svg>
           </button>
-          {noteOpen && (
-            <div className="absolute left-1/2 -translate-x-1/2 z-40 pt-2 w-[50vw]">
-              <textarea
-                id="note"
-                autoFocus
-                value={note}
-                rows={Math.max(3, note.split("\n").length + 1)}
-                onChange={(e) => { setNote(e.target.value); localStorage.setItem("clock-note", e.target.value); }}
-                placeholder=""
-                style={{ letterSpacing: "0.1em" }}
-                className="w-full resize-none bg-transparent text-left text-[12px] text-white/40 placeholder-white/15 outline-none border-2 border-white/15 focus:border-white/50 transition-colors rounded-lg p-3 leading-relaxed shadow-2xl"
-              />
+          {listOpen && (
+            <div className="w-full flex flex-col gap-1">
+              {listItems.map((item) => (
+                <div key={item.id} onDoubleClick={() => setEditingItem(item)} className="flex items-center gap-3 px-4 py-2.5 border border-white/8 rounded-lg cursor-pointer">
+                  <span className="flex-1 text-[12px] tracking-[0.1em] text-white/45">{item.text}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeListItem(item.id); }}
+                    className="text-white/20 hover:text-white/55 transition-colors shrink-0"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => setShowListAdd(true)}
+                className="flex items-center justify-center w-full py-2.5 text-white/20 hover:text-white/45 transition-colors"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
+                </svg>
+              </button>
             </div>
           )}
         </div>

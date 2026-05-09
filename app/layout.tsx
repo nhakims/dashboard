@@ -9,7 +9,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Clock",
+  title: "Dashboard",
 };
 
 export default function RootLayout({
