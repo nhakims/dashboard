@@ -81,7 +81,30 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Dashboard — Hakim Samah",
+  description: "A personal dashboard featuring a live clock, prayer times, daily Quran verse, weather, Quran streaming, and more.",
+  keywords: ["dashboard", "prayer times", "quran", "clock", "weather", "hijri date", "islamic"],
+  authors: [{ name: "Hakim Samah", url: "https://hakim.my" }],
+  creator: "Hakim Samah",
+  metadataBase: new URL("https://hakim.my"),
+  openGraph: {
+    title: "Dashboard — Hakim Samah",
+    description: "A personal dashboard featuring a live clock, prayer times, daily Quran verse, weather, Quran streaming, and more.",
+    url: "https://hakim.my",
+    siteName: "Dashboard",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Dashboard — Hakim Samah",
+    description: "A personal dashboard featuring a live clock, prayer times, daily Quran verse, weather, Quran streaming, and more.",
+    creator: "@nurhakimsamah",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

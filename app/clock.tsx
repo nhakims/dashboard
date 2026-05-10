@@ -458,10 +458,12 @@ type BgConfig = {
   showQuranPlayer: boolean;
   showRest: boolean;
   showPrayers: boolean;
+  showHijri: boolean;
+  quranFont: "naskh" | "kitab";
   fontFamily: FontId;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, showRest: true, showPrayers: true, fontFamily: "montserrat" };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, showRest: true, showPrayers: true, showHijri: false, quranFont: "naskh", fontFamily: "montserrat" };
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -493,11 +495,15 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [showQuranPlayer, setShowQuranPlayer] = useState(config.showQuranPlayer ?? true);
   const [showRest, setShowRest] = useState(config.showRest ?? true);
   const [showPrayers, setShowPrayers] = useState(config.showPrayers ?? true);
+  const [showHijri, setShowHijri] = useState(config.showHijri ?? false);
+  const [quranFont, setQuranFont] = useState<"naskh" | "kitab">(config.quranFont ?? "naskh");
   const [fontFamily, setFontFamily] = useState<FontId>(config.fontFamily ?? "montserrat");
-  const [openBg, setOpenBg] = useState(false);
-  const [openFont, setOpenFont] = useState(false);
-  const [openFontFamily, setOpenFontFamily] = useState(false);
-  const [openWidget, setOpenWidget] = useState(false);
+  const [openSection, setOpenSection] = useState<"bg" | "font" | "fontFamily" | "widget" | null>(null);
+  const toggleSection = (s: "bg" | "font" | "fontFamily" | "widget") => setOpenSection((v) => (v === s ? null : s));
+  const openBg = openSection === "bg";
+  const openFont = openSection === "font";
+  const openFontFamily = openSection === "fontFamily";
+  const openWidget = openSection === "widget";
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -506,7 +512,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showRest, showPrayers, fontFamily }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showRest, showPrayers, showHijri, quranFont, fontFamily }); onClose(); };
 
   return (
     <div
@@ -523,7 +529,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
         <div className="flex flex-col overflow-y-auto min-h-0">
           {/* Background accordion */}
           <button
-            onClick={() => setOpenBg((v) => !v)}
+            onClick={() => toggleSection("bg")}
             className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -542,7 +548,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
 
           {/* Font color accordion */}
           <button
-            onClick={() => setOpenFont((v) => !v)}
+            onClick={() => toggleSection("font")}
             className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -561,7 +567,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
 
           {/* Font family accordion */}
           <button
-            onClick={() => setOpenFontFamily((v) => !v)}
+            onClick={() => toggleSection("fontFamily")}
             className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -588,7 +594,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
           <div className="border-t border-white/5" />
 
           <button
-            onClick={() => setOpenWidget((v) => !v)}
+            onClick={() => toggleSection("widget")}
             className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -606,6 +612,20 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                 >
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
                 </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quran Font</p>
+                <div className="flex gap-1">
+                  {(["naskh", "kitab"] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setQuranFont(f)}
+                      className={`px-2.5 py-1 text-[10px] tracking-[0.15em] rounded border transition-colors uppercase ${quranFont === f ? "border-white/30 text-white/70 bg-white/10" : "border-white/10 text-white/30 hover:text-white/50"}`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quote</p>
@@ -635,7 +655,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Waktu Solat</p>
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Prayer Time</p>
                 <button
                   onClick={() => setShowPrayers((v) => !v)}
                   className={`w-10 h-5 rounded-full transition-colors relative ${showPrayers ? "bg-white/30" : "bg-white/10"}`}
@@ -644,12 +664,21 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Note</p>
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Tasks</p>
                 <button
                   onClick={() => setShowNote((v) => !v)}
                   className={`w-10 h-5 rounded-full transition-colors relative ${showNote ? "bg-white/30" : "bg-white/10"}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showNote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Hijri Date</p>
+                <button
+                  onClick={() => setShowHijri((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showHijri ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showHijri ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
                 </button>
               </div>
               <div className="flex items-center justify-between">
@@ -692,6 +721,54 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   );
 }
 
+function TermsModal({ onAccept }: { onAccept: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-0 bg-black/80 backdrop-blur-sm">
+      <div className="w-full max-w-sm bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="px-6 pt-6 pb-2">
+          <p className="text-[10px] tracking-[0.35em] fc-30 uppercase mb-4">Before you continue</p>
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[10px] fc-45 leading-relaxed tracking-[0.06em]">
+              This app is offered as-is for personal use. While we strive to keep things running smoothly, this service provider cannot be held responsible for any issues, inaccuracies, or losses that may arise.
+            </p>
+            <p className="text-[10px] fc-45 leading-relaxed tracking-[0.06em]">
+              Prayer times, weather data, and Quran content are fetched from third-party services and may occasionally differ from official sources.
+            </p>
+            <p className="text-[10px] fc-45 leading-relaxed tracking-[0.06em]">
+              Your continued use of this app is taken as your acceptance of these terms.
+            </p>
+          </div>
+        </div>
+        <div className="px-6 py-4">
+          <p className="text-[10px] tracking-[0.3em] fc-25 uppercase mb-2">Powered by</p>
+          <ul className="flex flex-col gap-1">
+            {[
+              ["Prayer Time API", "api.waktusolat.app"],
+              ["AlQuran Cloud", "alquran.cloud"],
+              ["Open-Meteo", "open-meteo.com"],
+              ["ipify", "ipify.org"],
+              ["Vercel", "vercel.com"],
+            ].map(([name, url]) => (
+              <li key={url} className="flex items-center justify-between">
+                <span className="text-[11px] fc-40 tracking-[0.1em]">{name}</span>
+                <span className="text-[10px] fc-20 tracking-[0.08em] font-mono">{url}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="px-6 pb-6">
+          <button
+            onClick={onAccept}
+            className="w-full py-2.5 text-xs tracking-[0.25em] fc bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
+          >
+            Agree
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ListItemModal({
   initial,
   onSave,
@@ -721,7 +798,7 @@ function ListItemModal({
     >
       <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <p className="text-xs tracking-[0.3em] fc-40 uppercase">{isEdit ? "Edit Item" : "New Item"}</p>
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">{isEdit ? "Edit Task" : "New Task"}</p>
           <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
         </div>
         <div className="px-5 py-4">
@@ -778,11 +855,13 @@ function VerseModal({
   verseNo,
   onNext,
   onClose,
+  quranFont,
 }: {
   verse: { surah: { englishName: string; englishNameTranslation: string; revelationType: string }; numberInSurah: number; text: string };
   verseNo: number;
   onNext: () => void;
   onClose: () => void;
+  quranFont?: "naskh" | "kitab";
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [arabicText, setArabicText] = useState<string | null>(null);
@@ -816,7 +895,7 @@ function VerseModal({
         </div>
         <div className="flex flex-col gap-4 px-5 py-6">
           {arabicText && (
-            <p className="text-3xl text-white/90 leading-loose text-right" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{arabicText}</p>
+            <p className="text-3xl text-white/90 leading-loose text-right" dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>{arabicText}</p>
           )}
           <div className="border-t border-white/5" />
           <p className="text-sm text-white/90 leading-relaxed italic">{verse.text}</p>
@@ -824,6 +903,60 @@ function VerseModal({
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
           <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Close</button>
           <button onClick={onNext} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">Next verse</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MusicSourcesModal({ onClose }: { onClose: () => void }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const sources = [
+    { name: "Free To Use Music", desc: "Epic & cinematic tracks", url: "https://freetouse.com/music/category/epic" },
+    { name: "Uppbeat", desc: "Inspiring royalty-free music", url: "https://uppbeat.io/music/category/inspiring" },
+    { name: "Pixabay Music", desc: "Motivational background music", url: "https://pixabay.com/music/search/motivation/?order=ec" },
+  ];
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-[60] flex items-center justify-center px-4 sm:px-0 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-sm bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <p className="text-xs tracking-[0.3em] fc-40 uppercase">Find Music</p>
+          <button onClick={onClose} className="fc-30 hover:fc-60 text-lg leading-none">✕</button>
+        </div>
+        <div className="flex flex-col gap-2 px-5 py-4">
+          {sources.map((s) => (
+            <a
+              key={s.url}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between px-4 py-3 rounded-lg border border-white/5 hover:bg-white/5 transition-colors group"
+            >
+              <div>
+                <p className="text-[11px] tracking-[0.15em] fc-60 group-hover:fc-80 transition-colors">{s.name}</p>
+                <p className="text-[10px] tracking-[0.1em] fc-25 mt-0.5">{s.desc}</p>
+              </div>
+              <svg className="w-3 h-3 fc-20 group-hover:fc-40 shrink-0 ml-3 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          ))}
+        </div>
+        <div className="px-5 pb-5">
+          <p className="text-[9px] tracking-[0.15em] fc-20 text-center leading-relaxed">
+            Please respect the creators&apos; talent and work — read each platform&apos;s licensing terms before use.
+          </p>
         </div>
       </div>
     </div>
@@ -857,6 +990,7 @@ function MediaModal({
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSources, setShowSources] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -888,7 +1022,7 @@ function MediaModal({
         {/* Player Controls */}
         <div className="px-6 py-8 flex flex-col items-center gap-6 border-b border-white/5 bg-white/[0.02]">
           <div className="text-center w-full">
-            <p className="text-sm font-medium fc-80 truncate px-4">
+            <p className="text-sm font-medium fc-80 truncate px-4 uppercase">
               {tracks.find(t => t.id === currentTrackId)?.name || "No track selected"}
             </p>
           </div>
@@ -922,8 +1056,8 @@ function MediaModal({
               }}
             >
               <div 
-                className="absolute top-0 left-0 h-full bg-white/70 transition-all duration-300 ease-out group-hover/progress:bg-white/90 rounded-full"
-                style={{ width: `${(progress / (duration || 1)) * 100}%` }}
+                className="absolute top-0 left-0 h-full transition-all duration-300 ease-out rounded-full"
+                style={{ width: `${(progress / (duration || 1)) * 100}%`, backgroundColor: 'rgb(var(--fc) / 0.7)' }}
               />
             </div>
           </div>
@@ -945,7 +1079,7 @@ function MediaModal({
                   onClick={() => onTrackSelect(track.id)}
                   className="flex-1 text-left min-w-0"
                 >
-                  <p className={`text-xs tracking-wide truncate ${track.id === currentTrackId ? "fc-90" : "fc-50"}`}>
+                  <p className={`text-xs tracking-wide truncate uppercase ${track.id === currentTrackId ? "fc-90" : "fc-50"}`}>
                     {track.name}
                   </p>
                 </button>
@@ -964,24 +1098,31 @@ function MediaModal({
         </div>
 
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
-          <input 
-            type="file" accept="audio/*" ref={fileInputRef} className="hidden" 
-            onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} 
+          <input
+            type="file" accept="audio/*" ref={fileInputRef} className="hidden"
+            onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
           />
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
           >
             Close
           </button>
-          <button 
+          <button
+            onClick={() => setShowSources(true)}
+            className="flex-1 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+          >
+            Find Music
+          </button>
+          <button
             onClick={() => fileInputRef.current?.click()}
             className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
           >
-            Upload Audio
+            Upload
           </button>
         </div>
       </div>
+      {showSources && <MusicSourcesModal onClose={() => setShowSources(false)} />}
     </div>
   );
 }
@@ -994,6 +1135,7 @@ function QuranPlayerModal({
   onPlayToggle,
   onSurahSelect,
   onClose,
+  quranFont,
 }: {
   surahs: { number: number; name: string; englishName: string }[];
   currentSurah: { number: number; name: string; englishName: string; ayahs: { audio: string }[] } | null;
@@ -1002,6 +1144,7 @@ function QuranPlayerModal({
   onPlayToggle: () => void;
   onSurahSelect: (num: number) => void;
   onClose: () => void;
+  quranFont?: "naskh" | "kitab";
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState("");
@@ -1056,7 +1199,7 @@ function QuranPlayerModal({
               )}
               {currentSurah ? (
                 <div className="flex flex-col items-center sm:items-start sm:gap-1">
-                  <p className="text-2xl sm:text-3xl fc-90 tracking-wide leading-tight text-center" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                  <p className="text-2xl sm:text-3xl fc-90 tracking-wide leading-tight text-center" dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>
                     {currentSurah.name}
                   </p>
                   <p className="text-[11px] fc-50 tracking-[0.12em] mt-1 truncate max-w-[20rem] text-center sm:text-left">
@@ -1103,7 +1246,7 @@ function QuranPlayerModal({
                     </p>
                   </div>
                 </div>
-                <span className={`text-sm ${s.number === currentSurah?.number ? "fc-80" : "fc-25"}`} dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>
+                <span className={`text-sm ${s.number === currentSurah?.number ? "fc-80" : "fc-25"}`} dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>
                   {s.name}
                 </span>
               </button>
@@ -1133,6 +1276,8 @@ function ClockFace({
   onZonePickerOpen,
   showRest,
   showPrayers,
+  showHijri,
+  hijriDate,
 }: {
   prayers: PrayerTimes | null;
   restStart: string;
@@ -1142,6 +1287,8 @@ function ClockFace({
   onZonePickerOpen: () => void;
   showRest?: boolean;
   showPrayers?: boolean;
+  showHijri?: boolean;
+  hijriDate?: string | null;
 }) {
   const [time, setTime] = useState<Date | null>(null);
   const [restAlert, setRestAlert] = useState(false);
@@ -1228,18 +1375,24 @@ function ClockFace({
     <>
       <div className="flex items-baseline tabular-nums">
         {`${hours}:${minutes}:${seconds}`.split("").map((char, i) => (
-          <span key={i} className={`inline-block text-center text-[12vw] leading-none ${char === ":" ? "w-[4vw] font-light fc-50" : i >= 6 ? "w-[9vw] font-bold fc-60" : "w-[9vw] font-bold fc-90"}`}>
+          <span key={i} className={`inline-block text-center text-[15vw] sm:text-[12vw] leading-none ${char === ":" ? "w-[5vw] sm:w-[4vw] font-light fc-50" : i >= 6 ? "w-[11vw] sm:w-[9vw] font-bold fc-60" : "w-[11vw] sm:w-[9vw] font-bold fc-90"}`}>
             {char}
           </span>
         ))}
       </div>
-      <div className="w-full sm:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-6">
-        <div className="h-full bg-white/70 rounded-full transition-all duration-1000 ease-linear" style={{ width: `${secondsPct}%` }} />
+      <div className="w-1/2 sm:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-6">
+        <div className="h-full rounded-full transition-all duration-1000 ease-linear" style={{ width: `${secondsPct}%`, backgroundColor: 'rgb(var(--fc) / 0.7)' }} />
       </div>
-      <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest fc uppercase md:mt-6 xl:mt-6 2xl:mt-10">{dateLabel}</p>
+      <div className="flex flex-col items-center gap-1 md:mt-6 xl:mt-6 2xl:mt-10">
+        <p className="text-sm sm:text-xl font-bold tracking-[0.1em] sm:tracking-widest fc uppercase">{dateLabel}</p>
+        {showHijri && hijriDate && (
+          <p className="text-[10px] tracking-[0.25em] fc-35 uppercase">{hijriDate}</p>
+        )}
+      </div>
       <div className="flex flex-col sm:flex-row w-full mt-6">
         {showRest !== false && (
           <div
+            onClick={() => { if (restAlert) { setRestAlert(false); setLockedRestTime(null); } }}
             onDoubleClick={onRestConfigOpen}
             className={`flex-1 flex flex-col items-center gap-2 pb-6 sm:pb-0 ${showPrayers !== false ? "sm:pr-8 border-b sm:border-b-0 sm:border-r border-white/5" : ""} cursor-pointer`}
           >
@@ -1252,10 +1405,10 @@ function ClockFace({
           </div>
         )}
         {showPrayers !== false && (
-          <div onDoubleClick={onZonePickerOpen} className="flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 sm:pl-8 cursor-pointer">
+          <div onClick={() => { if (prayerAlert) { setPrayerAlert(false); setLockedPrayer(null); } }} onDoubleClick={onZonePickerOpen} className={`flex-1 flex flex-col items-center gap-2 pt-6 sm:pt-0 ${showRest !== false ? "sm:pl-8" : ""} cursor-pointer`}>
           <div className="flex items-center gap-2 flex-wrap justify-center">
             {prayerAlert && <AlertDot onClear={() => { setPrayerAlert(false); setLockedPrayer(null); }} />}
-            <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Waktu Solat</p>
+            <p className="text-[12px] font-light tracking-[0.3em] fc-35 uppercase">Prayer Time</p>
             <span className="text-[10px] tracking-[0.2em] fc-20 uppercase border border-white/5 rounded px-1.5 py-0.5">{zone}</span>
           </div>
           {nextPrayer ? (
@@ -1277,7 +1430,8 @@ export default function Clock() {
   const [zone, setZone] = useState("WLY01");
   const [prayers, setPrayers] = useState<PrayerTimes | null>(null);
   const [showPicker, setShowPicker] = useState(false);
-  const [listItems, setListItems] = useState<{ id: string; text: string }[]>([]);
+  const [listItems, setListItems] = useState<{ id: string; text: string; done: boolean }[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(false);
   const [restStart, setRestStart] = useState("08:30");
   const [restInterval, setRestInterval] = useState(60);
@@ -1285,6 +1439,7 @@ export default function Clock() {
   const [weatherLoc, setWeatherLoc] = useState<WeatherLoc | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [showLocPicker, setShowLocPicker] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [showListAdd, setShowListAdd] = useState(false);
   const [editingItem, setEditingItem] = useState<{ id: string; text: string } | null>(null);
   const [bgConfig, setBgConfig] = useState<BgConfig>(DEFAULT_BG);
@@ -1296,6 +1451,7 @@ export default function Clock() {
   const [dailyQuote, setDailyQuote] = useState<{ q: string; a: string } | null>(null);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [userIp, setUserIp] = useState<string | null>(null);
+  const [hijriDate, setHijriDate] = useState<string | null>(null);
   const [tracks, setTracks] = useState<{ id: string; name: string }[]>([]);
   const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1309,6 +1465,7 @@ export default function Clock() {
   const currentTrackIdRef = useRef(currentTrackId);
   const isPlayingRef = useRef(isPlaying);
   const autoPlayNextRef = useRef(false);
+  const restoreProgressRef = useRef(0);
 
   // Quran Player State
   const [surahs, setSurahs] = useState<{ number: number; name: string; englishName: string }[]>([]);
@@ -1470,7 +1627,7 @@ export default function Clock() {
   useEffect(() => { currentTrackIdRef.current = currentTrackId; }, [currentTrackId]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  const loadTrack = useCallback(async (id: string, autoPlay = false) => {
+  const loadTrack = useCallback(async (id: string, autoPlay = false, startAt = 0) => {
     try {
       const file = await getMediaFile(id);
       if (!file || !audioRef.current) return;
@@ -1491,8 +1648,17 @@ export default function Clock() {
       audioRef.current.src = url;
       audioRef.current.load();
 
-      setProgress(0);
-      localStorage.removeItem("media-progress");
+      if (startAt > 0) {
+        const seek = () => {
+          if (audioRef.current) audioRef.current.currentTime = startAt;
+          audioRef.current?.removeEventListener("loadedmetadata", seek);
+        };
+        audioRef.current.addEventListener("loadedmetadata", seek);
+        setProgress(startAt);
+      } else {
+        setProgress(0);
+        localStorage.removeItem("media-progress");
+      }
 
       if (autoPlay) {
         audioRef.current.play().catch(() => {});
@@ -1519,7 +1685,11 @@ export default function Clock() {
     const savedTracks = localStorage.getItem("media-tracks");
     if (savedTracks) setTracks(JSON.parse(savedTracks));
     const savedTrackId = localStorage.getItem("current-track-id");
-    if (savedTrackId) setCurrentTrackId(savedTrackId);
+    const savedProgress = parseFloat(localStorage.getItem("media-progress") ?? "0") || 0;
+    if (savedTrackId) {
+      restoreProgressRef.current = savedProgress;
+      setCurrentTrackId(savedTrackId);
+    }
     const savedVolume = localStorage.getItem("media-volume");
     if (savedVolume) setVolume(Number(savedVolume));
   }, []);
@@ -1540,15 +1710,9 @@ export default function Clock() {
         if (index !== -1 && index < currentTracks.length - 1) {
           autoPlayNextRef.current = true;
           setCurrentTrackId(currentTracks[index + 1].id);
-        } else {
-          if (currentId) {
-            localStorage.removeItem(`media-progress`);
-          }
-          if (audioRef.current) {
-            audioRef.current.currentTime = 0;
-          }
-          setIsPlaying(false);
-          setProgress(0);
+        } else if (currentTracks.length > 0) {
+          autoPlayNextRef.current = true;
+          setCurrentTrackId(currentTracks[0].id);
         }
       };
       const handleError = (e: Event) => {
@@ -1584,9 +1748,11 @@ export default function Clock() {
   useEffect(() => {
     if (currentTrackId) {
       const shouldAutoPlay = autoPlayNextRef.current;
+      const startAt = restoreProgressRef.current;
       autoPlayNextRef.current = false;
+      restoreProgressRef.current = 0;
       localStorage.setItem("current-track-id", currentTrackId);
-      loadTrack(currentTrackId, shouldAutoPlay);
+      loadTrack(currentTrackId, shouldAutoPlay, startAt);
     }
   }, [currentTrackId, loadTrack]);
 
@@ -1656,11 +1822,15 @@ export default function Clock() {
   }, [bgConfig.showPlayer, isPlaying]);
 
   useEffect(() => {
+    if (!localStorage.getItem("terms-accepted")) setShowTerms(true);
     const saved = localStorage.getItem("solat-zone");
     if (saved) setZone(saved);
-    const savedList = localStorage.getItem("clock-list");
-    const defaultList = [{ id: "default", text: "Some text here" }];
-    setListItems(savedList ? JSON.parse(savedList) : defaultList);
+    const todayKey = `clock-list-${new Date().toISOString().slice(0, 10)}`;
+    const savedList = localStorage.getItem(todayKey) ?? localStorage.getItem("clock-list");
+    const defaultList = [{ id: "default", text: "Some text here", done: false }];
+    const parsed = savedList ? JSON.parse(savedList) : defaultList;
+    setListItems(parsed.map((i: { id: string; text: string; done?: boolean }) => ({ ...i, done: i.done ?? false })));
+    localStorage.removeItem("clock-list");
     setRestStart(localStorage.getItem("rest-start") ?? "08:30");
     setRestInterval(parseInt(localStorage.getItem("rest-interval") ?? "60"));
     const savedLoc = localStorage.getItem("weather-loc");
@@ -1686,6 +1856,18 @@ export default function Clock() {
     fetch("https://api.ipify.org?format=json")
       .then((r) => r.json())
       .then((d) => { if (d.ip) setUserIp(d.ip); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("https://ummahapi.com/api/today-hijri")
+      .then((r) => r.json())
+      .then((d) => {
+        const h = d?.data?.hijri;
+        if (h?.day && h?.month_name && h?.year) {
+          setHijriDate(`${h.day} ${h.month_name} ${h.year} H`);
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -1726,16 +1908,20 @@ export default function Clock() {
     localStorage.setItem("rest-interval", String(interval));
   };
 
-  const saveList = (items: { id: string; text: string }[]) => {
+  const saveList = (items: { id: string; text: string; done: boolean }[]) => {
     setListItems(items);
-    localStorage.setItem("clock-list", JSON.stringify(items));
+    const todayKey = `clock-list-${new Date().toISOString().slice(0, 10)}`;
+    localStorage.setItem(todayKey, JSON.stringify(items));
   };
   const addListItem = (text: string) => {
     if (!text.trim()) return;
-    saveList([...listItems, { id: Date.now().toString(), text: text.trim() }]);
+    saveList([...listItems, { id: Date.now().toString(), text: text.trim(), done: false }]);
   };
   const editListItem = (id: string, text: string) => {
     saveList(listItems.map((i) => (i.id === id ? { ...i, text: text.trim() } : i)));
+  };
+  const toggleListItem = (id: string) => {
+    saveList(listItems.map((i) => (i.id === id ? { ...i, done: !i.done } : i)));
   };
   const removeListItem = (id: string) => saveList(listItems.filter((i) => i.id !== id));
 
@@ -1796,6 +1982,9 @@ export default function Clock() {
 
   return (
     <>
+      {showTerms && (
+        <TermsModal onAccept={() => { localStorage.setItem("terms-accepted", "1"); setShowTerms(false); }} />
+      )}
       {/* Background layer */}
       <div className="fixed inset-0 -z-10 transition-colors duration-500" style={bgStyle} />
 
@@ -1835,6 +2024,7 @@ export default function Clock() {
           onPlayToggle={toggleQuranPlay}
           onSurahSelect={loadSurah}
           onClose={() => setShowQuranModal(false)}
+          quranFont={bgConfig.quranFont}
         />
       )}
       {showRestConfig && (
@@ -1860,6 +2050,7 @@ export default function Clock() {
           verseNo={verseNo}
           onNext={nextVerse}
           onClose={() => setShowVerseModal(false)}
+          quranFont={bgConfig.quranFont}
         />
       )}
       {showQuoteModal && dailyQuote && (
@@ -1930,6 +2121,8 @@ export default function Clock() {
           onZonePickerOpen={() => setShowPicker(true)}
           showRest={bgConfig.showRest}
           showPrayers={bgConfig.showPrayers}
+          showHijri={bgConfig.showHijri}
+          hijriDate={hijriDate}
         />
 
         {/* Media Player Widget */}
@@ -1951,7 +2144,7 @@ export default function Clock() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-2">Now Playing</p>
-                <p className="text-xs fc-60 truncate">
+                <p className="text-xs fc-60 truncate tracking-[0.15em] uppercase">
                   {tracks.find(t => t.id === currentTrackId)?.name || "No track selected"}
                 </p>
               </div>
@@ -1980,7 +2173,7 @@ export default function Clock() {
                 <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Quran Streaming</p>
                 {currentSurah ? (
                   <>
-                    <p className="text-base fc-80 leading-tight my-2" dir="rtl" style={{ fontFamily: "var(--font-arabic)" }}>{currentSurah.name}</p>
+                    <p className="text-2xl fc-80 leading-tight my-2" dir="rtl" style={{ fontFamily: bgConfig.quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>{currentSurah.name}</p>
                     <p className="text-[10px] fc-40 tracking-wide truncate">
                       {currentSurah.englishName}
                       <span className="text-[10px] fc-30 ml-2">· {currentAyahIndex + 1}</span>
@@ -2019,19 +2212,33 @@ export default function Clock() {
           </button>
           {listOpen && (
             <div className="w-full flex flex-col gap-1">
-              {listItems.map((item) => (
-                <div key={item.id} onDoubleClick={() => setEditingItem(item)} className="flex items-center gap-3 px-4 py-2.5 border border-white/8 rounded-lg cursor-pointer">
-                  <span className="flex-1 text-[12px] tracking-[0.1em] fc-45">{item.text}</span>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); removeListItem(item.id); }}
-                    className="fc-20 hover:fc-55 transition-colors shrink-0"
+              <div className={`flex flex-col gap-1 ${listItems.length > 3 ? "max-h-[calc(3*3.25rem)] overflow-y-auto pr-1" : ""}`}>
+                {listItems.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => toggleListItem(item.id)}
+                    onDoubleClick={() => { if (!item.done) setEditingItem(item); }}
+                    className="flex items-center gap-3 px-4 py-2.5 border border-white/8 rounded-lg cursor-pointer select-none"
                   >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ))}
+                    <span className={`flex-1 text-[12px] tracking-[0.1em] transition-all ${item.done ? "line-through fc-20" : "fc-45"}`}>{item.text}</span>
+                    {confirmDelete === item.id ? (
+                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => { removeListItem(item.id); setConfirmDelete(null); }} className="text-[10px] tracking-[0.1em] text-red-400/70 hover:text-red-400 transition-colors">Confirm</button>
+                        <button onClick={() => setConfirmDelete(null)} className="text-[10px] tracking-[0.1em] fc-25 hover:fc-55 transition-colors">Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(item.id); }}
+                        className="fc-20 hover:fc-55 transition-colors shrink-0"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
               <button
                 onClick={() => setShowListAdd(true)}
                 className="flex items-center justify-center w-full py-2.5 fc-20 hover:fc-45 transition-colors"
@@ -2047,7 +2254,10 @@ export default function Clock() {
       </div>
         {bgConfig.showCopyright !== false && (
           <div className="flex flex-col items-center pb-6 pt-4 gap-1">
-            <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
+            <div className="flex items-center gap-2">
+              <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
+              <button onClick={() => setShowTerms(true)} className="text-[10px] tracking-[0.2em] fc-25 hover:fc-50 uppercase transition-colors">· Terms</button>
+            </div>
             {userIp && <span className="text-[9px] font-thin tracking-[0.2em] fc-25">{userIp}</span>}
           </div>
         )}

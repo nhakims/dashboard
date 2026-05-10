@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://alquran.cloud/public/css/font-kitab.css?v=1');
 
 :root {
   --background: #0a0a0a;
