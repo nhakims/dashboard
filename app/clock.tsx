@@ -497,6 +497,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [openBg, setOpenBg] = useState(false);
   const [openFont, setOpenFont] = useState(false);
   const [openFontFamily, setOpenFontFamily] = useState(false);
+  const [openWidget, setOpenWidget] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -586,89 +587,100 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
 
           <div className="border-t border-white/5" />
 
-          <div className="flex flex-col gap-4 px-5 py-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quran</p>
-              <button
-                onClick={() => setShowQuran((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
+          <button
+            onClick={() => setOpenWidget((v) => !v)}
+            className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Widgets</p>
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quote</p>
-              <button
-                onClick={() => setShowDailyQuote((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showDailyQuote ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDailyQuote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
+            <svg className={`w-3.5 h-3.5 text-white/20 transition-transform ${openWidget ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          {openWidget && (
+            <div className="px-5 pb-5 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quran</p>
+                <button
+                  onClick={() => setShowQuran((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showQuran ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuran ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Daily Quote</p>
+                <button
+                  onClick={() => setShowDailyQuote((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showDailyQuote ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showDailyQuote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Weather</p>
+                <button
+                  onClick={() => setShowWeather((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showWeather ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showWeather ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quick Rest</p>
+                <button
+                  onClick={() => setShowRest((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showRest ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showRest ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Waktu Solat</p>
+                <button
+                  onClick={() => setShowPrayers((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showPrayers ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPrayers ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Note</p>
+                <button
+                  onClick={() => setShowNote((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showNote ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showNote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Media Player</p>
+                <button
+                  onClick={() => setShowPlayer((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showPlayer ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quran Player</p>
+                <button
+                  onClick={() => setShowQuranPlayer((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showQuranPlayer ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuranPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Copyright</p>
+                <button
+                  onClick={() => setShowCopyright((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showCopyright ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showCopyright ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Weather</p>
-              <button
-                onClick={() => setShowWeather((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showWeather ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showWeather ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quick Rest</p>
-              <button
-                onClick={() => setShowRest((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showRest ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showRest ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Waktu Solat</p>
-              <button
-                onClick={() => setShowPrayers((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showPrayers ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPrayers ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Note</p>
-              <button
-                onClick={() => setShowNote((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showNote ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showNote ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Media Player</p>
-              <button
-                onClick={() => setShowPlayer((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showPlayer ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Quran Player</p>
-              <button
-                onClick={() => setShowQuranPlayer((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showQuranPlayer ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuranPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Copyright</p>
-              <button
-                onClick={() => setShowCopyright((v) => !v)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${showCopyright ? "bg-white/30" : "bg-white/10"}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showCopyright ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
-              </button>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="shrink-0 flex gap-2 px-5 py-4 border-t border-white/5">
