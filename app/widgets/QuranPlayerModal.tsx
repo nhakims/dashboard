@@ -12,7 +12,7 @@ export function QuranPlayerModal({
   onClose,
   quranFont,
 }: {
-  surahs: { number: number; name: string; englishName: string }[];
+  surahs: { number: number; name: string; englishName: string; numberOfAyahs: number; revelationType: string }[];
   currentSurah: { number: number; name: string; englishName: string; ayahs: { audio: string }[] } | null;
   currentAyahIndex: number;
   isPlaying: boolean;
@@ -46,10 +46,10 @@ export function QuranPlayerModal({
       <div className="w-full max-w-md bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col max-h-[80vh]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <div>
-            <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Quran Player</p>
-            <p className="text-[10px] tracking-[0.2em] text-white/25 mt-0.5">Streaming · Mishary Rashid Alafasy</p>
+            <p className="text-xs tracking-[0.3em] text-white/60 uppercase">Quran Player</p>
+            <p className="text-[10px] tracking-[0.2em] text-white/40 mt-0.5">Streaming · Mishary Rashid Alafasy</p>
           </div>
-          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none transition-colors">✕</button>
+          <button onClick={onClose} className="text-white/50 hover:text-white/75 text-lg leading-none transition-colors">✕</button>
         </div>
 
         <div className="px-6 py-8 flex flex-col items-center gap-6 border-b border-white/5 bg-white/[0.02]">
@@ -60,28 +60,28 @@ export function QuranPlayerModal({
               aria-label="Play/Pause Quran"
             >
               {isPlaying ? (
-                <svg className="w-7 h-7 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <svg className="w-7 h-7 text-white/90" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               ) : (
-                <svg className="w-7 h-7 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-7 h-7 text-white/90" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
 
             <div className="text-center w-auto">
               {!currentSurah && (
-                <p className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-1">Select a Surah</p>
+                <p className="text-[10px] tracking-[0.2em] text-white/50 uppercase mb-1">Select a Surah</p>
               )}
               {currentSurah ? (
                 <div className="flex flex-col items-center sm:items-start sm:gap-1">
-                  <p className="text-2xl sm:text-3xl text-white/90 tracking-wide leading-tight text-center" dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>
+                  <p className="text-2xl sm:text-3xl text-white/95 tracking-wide leading-tight text-center" dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>
                     {currentSurah.name}
                   </p>
-                  <p className="text-[11px] tracking-[0.12em] text-white/50 mt-1 truncate max-w-[20rem] text-center sm:text-left">
+                  <p className="text-[11px] tracking-[0.2em] uppercase text-white/70 mt-1 truncate max-w-[20rem] text-center sm:text-left">
                     {currentSurah.englishName}
-                    <span className="text-[10px] tracking-[0.1em] text-white/30 ml-2">· {currentAyahIndex + 1}/{currentSurah.ayahs.length}</span>
+                    <span className="text-[10px] tracking-[0.2em] text-white/50 ml-2">· {currentAyahIndex + 1} / {currentSurah.ayahs.length}</span>
                   </p>
                 </div>
               ) : (
-                <p className="text-sm tracking-[0.1em] text-white/30">—</p>
+                <p className="text-sm tracking-[0.1em] text-white/50">—</p>
               )}
             </div>
           </div>
@@ -93,7 +93,7 @@ export function QuranPlayerModal({
             placeholder="Search surah..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="w-full bg-transparent text-sm text-white/70 tracking-[0.1em] placeholder-white/20 outline-none"
+            className="w-full bg-transparent text-sm text-white/85 tracking-[0.1em] placeholder-white/20 outline-none"
           />
         </div>
 
@@ -106,14 +106,17 @@ export function QuranPlayerModal({
                 className={`flex items-center justify-between p-3 rounded-lg transition-colors ${s.number === currentSurah?.number ? "bg-white/10" : "hover:bg-white/5"}`}
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <span className="text-[10px] tracking-[0.1em] text-white/25 tabular-nums w-4">{s.number}</span>
+                  <span className="text-[10px] tracking-[0.2em] text-white/40 tabular-nums w-4 shrink-0">{s.number}</span>
                   <div className="text-left min-w-0">
-                    <p className={`text-xs tracking-[0.1em] truncate ${s.number === currentSurah?.number ? "text-white/90" : "text-white/50"}`}>
+                    <p className={`text-xs tracking-[0.2em] uppercase truncate ${s.number === currentSurah?.number ? "text-white/95" : "text-white/70"}`}>
                       {s.englishName}
+                    </p>
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 mt-0.5">
+                      {s.revelationType} · {s.numberOfAyahs} ayahs
                     </p>
                   </div>
                 </div>
-                <span className={`text-sm ${s.number === currentSurah?.number ? "text-white/80" : "text-white/25"}`} dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>
+                <span className={`text-sm ${s.number === currentSurah?.number ? "text-white/90" : "text-white/40"}`} dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>
                   {s.name}
                 </span>
               </button>
@@ -124,7 +127,7 @@ export function QuranPlayerModal({
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
           <button
             onClick={onClose}
-            className="w-full py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+            className="w-full py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
           >
             Close
           </button>
