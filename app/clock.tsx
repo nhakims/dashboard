@@ -59,6 +59,7 @@ type PrayerTimes = Partial<Record<PrayerKey, string>>;
 
 type WeatherLoc = { name: string; lat: number; lon: number };
 type WeatherData = { temp: number; code: number };
+type Reminder = { id: string; text: string; date: string; time: string };
 
 function getWeatherInfo(code: number): { label: string; kind: "sun" | "partly" | "cloud" | "rain" | "snow" | "storm" | "fog" } {
   if (code === 0 || code === 1)   return { label: "Clear sky",     kind: "sun"    };
@@ -456,6 +457,7 @@ type BgConfig = {
   showNote: boolean;
   showPlayer: boolean;
   showQuranPlayer: boolean;
+  showReminder: boolean;
   showRest: boolean;
   showPrayers: boolean;
   showHijri: boolean;
@@ -463,7 +465,7 @@ type BgConfig = {
   fontFamily: FontId;
 };
 
-const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, showRest: true, showPrayers: true, showHijri: false, quranFont: "naskh", fontFamily: "montserrat" };
+const DEFAULT_BG: BgConfig = { color: "#0a0a0a", fontColor: "#ffffff", showQuran: false, showDailyQuote: false, showWeather: false, showCopyright: true, showNote: false, showPlayer: false, showQuranPlayer: false, showReminder: false, showRest: true, showPrayers: true, showHijri: false, quranFont: "naskh", fontFamily: "montserrat" };
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -493,6 +495,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
   const [showNote, setShowNote] = useState(config.showNote ?? true);
   const [showPlayer, setShowPlayer] = useState(config.showPlayer ?? true);
   const [showQuranPlayer, setShowQuranPlayer] = useState(config.showQuranPlayer ?? true);
+  const [showReminder, setShowReminder] = useState(config.showReminder ?? false);
   const [showRest, setShowRest] = useState(config.showRest ?? true);
   const [showPrayers, setShowPrayers] = useState(config.showPrayers ?? true);
   const [showHijri, setShowHijri] = useState(config.showHijri ?? false);
@@ -512,7 +515,7 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showRest, showPrayers, showHijri, quranFont, fontFamily }); onClose(); };
+  const submit = () => { onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showReminder, showRest, showPrayers, showHijri, quranFont, fontFamily }); onClose(); };
 
   return (
     <div
@@ -520,13 +523,13 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
       className="fixed inset-0 z-50 flex items-start justify-end p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-2 sm:mt-10 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-5rem)]">
+      <div className="w-full max-w-xs bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col mt-2 sm:mt-10 max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-5rem)]">
         <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/5">
           <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Appearance</p>
           <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex flex-col overflow-y-auto min-h-0">
+        <div className="flex flex-col overflow-y-auto min-h-0 flex-1 scrollbar-thin">
           {/* Background accordion */}
           <button
             onClick={() => toggleSection("bg")}
@@ -697,6 +700,15 @@ function BgSettingsModal({ config, onSave, onClose }: { config: BgConfig; onSave
                   className={`w-10 h-5 rounded-full transition-colors relative ${showQuranPlayer ? "bg-white/30" : "bg-white/10"}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showQuranPlayer ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] tracking-[0.25em] text-white/30 uppercase">Reminders</p>
+                <button
+                  onClick={() => setShowReminder((v) => !v)}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showReminder ? "bg-white/30" : "bg-white/10"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showReminder ? "translate-x-[1.25rem]" : "translate-x-0"}`} />
                 </button>
               </div>
               <div className="flex items-center justify-between">
@@ -1079,7 +1091,7 @@ function MediaModal({
                   onClick={() => onTrackSelect(track.id)}
                   className="flex-1 text-left min-w-0"
                 >
-                  <p className={`text-xs tracking-wide truncate uppercase ${track.id === currentTrackId ? "fc-90" : "fc-50"}`}>
+                  <p className={`text-xs tracking-[0.15em] truncate uppercase ${track.id === currentTrackId ? "fc-90" : "fc-50"}`}>
                     {track.name}
                   </p>
                 </button>
@@ -1426,6 +1438,219 @@ function ClockFace({
   );
 }
 
+function ReminderModal({
+  reminders,
+  onSave,
+  onClose,
+}: {
+  reminders: Reminder[];
+  onSave: (items: Reminder[]) => void;
+  onClose: () => void;
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<Reminder[]>(
+    [...reminders].sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))
+  );
+  const [text, setText] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [time, setTime] = useState(() => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + 30);
+    return d.toTimeString().slice(0, 5);
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const textRef = useRef<HTMLInputElement>(null);
+  const editTextRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { editingId ? setEditingId(null) : onClose(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose, editingId]);
+
+  useEffect(() => {
+    if (editingId) editTextRef.current?.focus();
+  }, [editingId]);
+
+  const startEdit = (item: Reminder) => {
+    setEditingId(item.id);
+    setEditText(item.text);
+    setEditDate(item.date);
+    setEditTime(item.time);
+  };
+
+  const saveEdit = () => {
+    if (!editText.trim() || !editingId) return;
+    const updated = items
+      .map((i) => i.id === editingId ? { ...i, text: editText.trim(), date: editDate, time: editTime } : i)
+      .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
+    setItems(updated);
+    setEditingId(null);
+  };
+
+  const addItem = () => {
+    if (!text.trim()) return;
+    const newItems = [...items, { id: crypto.randomUUID(), text: text.trim(), date, time }]
+      .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
+    setItems(newItems);
+    setText("");
+    textRef.current?.focus();
+  };
+
+  const confirmRemove = (id: string) => {
+    if (editingId === id) setEditingId(null);
+    setConfirmDeleteId(null);
+    const updated = items.filter((i) => i.id !== id);
+    setItems(updated);
+    onSave(updated);
+  };
+
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+
+  const formatDate = (d: string) => {
+    if (d === today) return "Today";
+    return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  };
+
+  const isAlert = (r: Reminder) => {
+    const diff = (new Date(`${r.date}T${r.time}`).getTime() - now.getTime()) / 60000;
+    return diff >= -10 && diff <= 10;
+  };
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === overlayRef.current && onClose()}
+    >
+      <div className="w-full max-w-sm bg-[#111] border border-white/5 rounded-xl overflow-hidden flex flex-col max-h-[80dvh]">
+        <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-white/5">
+          <p className="text-xs tracking-[0.3em] text-white/40 uppercase">Reminders</p>
+          <button onClick={onClose} className="text-white/30 hover:text-white/60 text-lg leading-none">✕</button>
+        </div>
+
+        <div className="flex-1 overflow-y-scroll min-h-0 scrollbar-thin">
+          {items.length === 0 ? (
+            <p className="text-center text-[11px] tracking-[0.15em] text-white/20 uppercase py-8">No reminders yet</p>
+          ) : (
+            <div className="flex flex-col divide-y divide-white/5">
+              {items.map((item) => {
+                const alert = isAlert(item);
+                if (editingId === item.id) {
+                  return (
+                    <div key={item.id} className="flex flex-col gap-2 px-5 py-3 bg-white/[0.03]">
+                      <input
+                        ref={editTextRef}
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                        className="w-full bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/70 outline-none focus:bg-white/8 transition-colors"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={editDate}
+                          onChange={(e) => setEditDate(e.target.value)}
+                          className="flex-1 bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/50 outline-none focus:bg-white/8 transition-colors [color-scheme:dark]"
+                        />
+                        <input
+                          type="time"
+                          value={editTime}
+                          onChange={(e) => setEditTime(e.target.value)}
+                          className="flex-1 bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/50 outline-none focus:bg-white/8 transition-colors [color-scheme:dark]"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => setEditingId(null)} className="flex-1 py-1.5 text-[10px] tracking-[0.15em] uppercase text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors">Cancel</button>
+                        <button onClick={saveEdit} disabled={!editText.trim()} className="flex-1 py-1.5 text-[10px] tracking-[0.15em] uppercase text-white/60 bg-white/8 border border-white/10 rounded-lg hover:bg-white/12 transition-colors disabled:opacity-30">Save</button>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 px-5 py-3 transition-colors cursor-pointer hover:bg-white/[0.06] ${alert ? "bg-red-500/[0.06]" : ""}`}
+                    onClick={() => startEdit(item)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`text-[10px] tracking-[0.15em] uppercase font-medium ${alert ? "text-red-400/70" : "text-white/25"}`}>{item.time}</span>
+                        <span className={`text-[10px] ${alert ? "text-red-400/40" : "text-white/15"}`}>·</span>
+                        <span className={`text-[10px] tracking-[0.1em] uppercase ${alert ? "text-red-400/40" : "text-white/15"}`}>{formatDate(item.date)}</span>
+                      </div>
+                      <p className={`text-xs tracking-[0.08em] truncate ${alert ? "text-red-300/80" : "text-white/50"}`}>{item.text}</p>
+                    </div>
+                    {confirmDeleteId === item.id ? (
+                      <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => confirmRemove(item.id)} className="text-[10px] tracking-[0.1em] text-red-400/70 hover:text-red-400 transition-colors">Confirm</button>
+                        <button onClick={() => setConfirmDeleteId(null)} className="text-[10px] tracking-[0.1em] text-white/25 hover:text-white/55 transition-colors">Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(item.id); }}
+                        className="shrink-0 text-white/15 hover:text-white/50 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="px-5 py-4 border-t border-white/5 flex flex-col gap-3">
+            <input
+              ref={textRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addItem()}
+              placeholder="Reminder text…"
+              className="w-full bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/70 placeholder:text-white/20 outline-none focus:bg-white/8 transition-colors"
+            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="flex-1 bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/50 outline-none focus:bg-white/8 transition-colors [color-scheme:dark]"
+              />
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="flex-1 bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/50 outline-none focus:bg-white/8 transition-colors [color-scheme:dark]"
+              />
+            </div>
+            <button
+              onClick={addItem}
+              disabled={!text.trim()}
+              className="w-full py-2 text-xs tracking-[0.2em] uppercase text-white/40 hover:text-white/70 border border-white/8 hover:border-white/15 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+        <div className="shrink-0 flex gap-2 px-5 py-4 border-t border-white/5">
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/30 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
+          <button onClick={() => { onSave(items); onClose(); }} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Clock() {
   const [zone, setZone] = useState("WLY01");
   const [prayers, setPrayers] = useState<PrayerTimes | null>(null);
@@ -1479,9 +1704,19 @@ export default function Clock() {
   const currentAyahIndexRef = useRef(currentAyahIndex);
   const surahsRef = useRef(surahs);
 
+  // Reminder state
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderNow, setReminderNow] = useState(() => new Date());
+
   useEffect(() => { currentSurahRef.current = currentSurah; }, [currentSurah]);
   useEffect(() => { currentAyahIndexRef.current = currentAyahIndex; }, [currentAyahIndex]);
   useEffect(() => { surahsRef.current = surahs; }, [surahs]);
+
+  useEffect(() => {
+    const id = setInterval(() => setReminderNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const loadSurah = useCallback(async (num: number, autoPlay = true, startAyah = 0) => {
     try {
@@ -1837,6 +2072,8 @@ export default function Clock() {
     if (savedLoc) setWeatherLoc(JSON.parse(savedLoc));
     const savedBg = localStorage.getItem("bg-config");
     if (savedBg) setBgConfig(JSON.parse(savedBg));
+    const savedReminders = localStorage.getItem("reminders");
+    if (savedReminders) setReminders(JSON.parse(savedReminders));
     const savedVerse = localStorage.getItem("quran-verse");
     const next = savedVerse ? (parseInt(savedVerse) % 6236) + 1 : 1;
     setVerseNo(next);
@@ -1912,6 +2149,27 @@ export default function Clock() {
     setListItems(items);
     const todayKey = `clock-list-${new Date().toISOString().slice(0, 10)}`;
     localStorage.setItem(todayKey, JSON.stringify(items));
+  };
+
+  const saveReminders = (items: Reminder[]) => {
+    setReminders(items);
+    localStorage.setItem("reminders", JSON.stringify(items));
+  };
+
+  const nearestReminders = reminders
+    .filter((r) => new Date(`${r.date}T${r.time}`).getTime() >= reminderNow.getTime() - 10 * 60 * 1000)
+    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))
+    .slice(0, 3);
+
+  const isReminderAlert = (r: Reminder) => {
+    const diff = (new Date(`${r.date}T${r.time}`).getTime() - reminderNow.getTime()) / 60000;
+    return diff >= -10 && diff <= 10;
+  };
+
+  const reminderToday = reminderNow.toISOString().slice(0, 10);
+  const formatReminderDate = (d: string) => {
+    if (d === reminderToday) return "Today";
+    return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   };
   const addListItem = (text: string) => {
     if (!text.trim()) return;
@@ -2040,6 +2298,13 @@ export default function Clock() {
           current={weatherLoc}
           onSave={saveWeatherLoc}
           onClose={() => setShowLocPicker(false)}
+        />
+      )}
+      {showReminderModal && (
+        <ReminderModal
+          reminders={reminders}
+          onSave={saveReminders}
+          onClose={() => setShowReminderModal(false)}
         />
       )}
 
@@ -2183,6 +2448,37 @@ export default function Clock() {
                   <p className="text-xs fc-40">Select a Surah</p>
                 )}
               </div>
+            </button>
+          </div>
+        )}
+
+        {/* Reminder Widget */}
+        {bgConfig.showReminder !== false && (
+          <div className="w-full mt-6">
+            <button
+              onClick={() => setShowReminderModal(true)}
+              className="w-full flex flex-col gap-1.5"
+            >
+              {nearestReminders.length === 0 ? (
+                <p className="text-center text-[10px] tracking-[0.25em] fc-15 uppercase py-1">No upcoming reminders</p>
+              ) : (
+                nearestReminders.map((r) => {
+                  const alert = isReminderAlert(r);
+                  const dateLabel = formatReminderDate(r.date);
+                  return (
+                    <div
+                      key={r.id}
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
+                        alert ? "bg-red-500/[0.07] border border-red-500/20" : "bg-white/[0.015]"
+                      }`}
+                    >
+                      <span className={`text-[10px] tracking-[0.2em] tabular-nums font-medium shrink-0 ${alert ? "text-red-400/70" : "fc-25"}`}>{r.time}</span>
+                      <span className={`text-[11px] tracking-[0.08em] truncate flex-1 ${alert ? "text-red-300/80" : "fc-40"}`}>{r.text}</span>
+                      {dateLabel && <span className={`text-[10px] tracking-[0.1em] shrink-0 ${alert ? "text-red-400/40" : "fc-15"}`}>{dateLabel}</span>}
+                    </div>
+                  );
+                })
+              )}
             </button>
           </div>
         )}
