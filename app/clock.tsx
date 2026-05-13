@@ -43,7 +43,7 @@ export default function Clock() {
   const [showTerms, setShowTerms] = useState(false);
   const [showListAdd, setShowListAdd] = useState(false);
   const [editingItem, setEditingItem] = useState<{ id: string; text: string } | null>(null);
-  const [bgConfig, setBgConfig] = useState<BgConfig>(DEFAULT_BG);
+  const [appearanceConfig, setAppearanceConfig] = useState<BgConfig>(DEFAULT_BG);
   const [showBgSettings, setShowBgSettings] = useState(false);
   const [showVerseModal, setShowVerseModal] = useState(false);
   const [verseNo, setVerseNo] = useState(1);
@@ -222,11 +222,11 @@ export default function Clock() {
   };
 
   useEffect(() => {
-    if (!bgConfig.showQuranPlayer && isQuranPlaying && quranAudioRef.current) {
+    if (!appearanceConfig.showQuranPlayer && isQuranPlaying && quranAudioRef.current) {
       quranAudioRef.current.pause();
       setIsQuranPlaying(false);
     }
-  }, [bgConfig.showQuranPlayer, isQuranPlaying]);
+  }, [appearanceConfig.showQuranPlayer, isQuranPlaying]);
 
   useEffect(() => { tracksRef.current = tracks; }, [tracks]);
   useEffect(() => { currentTrackIdRef.current = currentTrackId; }, [currentTrackId]);
@@ -421,11 +421,11 @@ export default function Clock() {
   };
 
   useEffect(() => {
-    if (!bgConfig.showPlayer && isPlaying && audioRef.current) {
+    if (!appearanceConfig.showPlayer && isPlaying && audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
     }
-  }, [bgConfig.showPlayer, isPlaying]);
+  }, [appearanceConfig.showPlayer, isPlaying]);
 
   useEffect(() => {
     if (!localStorage.getItem("terms-accepted")) setShowTerms(true);
@@ -442,7 +442,7 @@ export default function Clock() {
     const savedLoc = localStorage.getItem("weather-loc");
     if (savedLoc) setWeatherLoc(JSON.parse(savedLoc));
     const savedBg = localStorage.getItem("bg-config");
-    if (savedBg) setBgConfig(JSON.parse(savedBg));
+    if (savedBg) setAppearanceConfig(JSON.parse(savedBg));
     const savedReminders = localStorage.getItem("reminders");
     if (savedReminders) setReminders(JSON.parse(savedReminders));
     const savedVerse = localStorage.getItem("quran-verse");
@@ -480,7 +480,7 @@ export default function Clock() {
   }, []);
 
   useEffect(() => {
-    if (!bgConfig.showDailyQuote) return;
+    if (!appearanceConfig.showDailyQuote) return;
     const today = new Date().toDateString();
     const cached = localStorage.getItem("daily-quote");
     if (cached) {
@@ -496,7 +496,7 @@ export default function Clock() {
         }
       })
       .catch(() => {});
-  }, [bgConfig.showDailyQuote]);
+  }, [appearanceConfig.showDailyQuote]);
 
   const nextVerse = () => {
     const next = verseNo < 6236 ? verseNo + 1 : 1;
@@ -504,8 +504,8 @@ export default function Clock() {
     localStorage.setItem("quran-verse", String(next));
   };
 
-  const saveBgConfig = (c: BgConfig) => {
-    setBgConfig(c);
+  const saveAppearanceConfig = (c: BgConfig) => {
+    setAppearanceConfig(c);
     localStorage.setItem("bg-config", JSON.stringify(c));
   };
 
@@ -608,7 +608,7 @@ export default function Clock() {
     localStorage.setItem("solat-zone", z);
   };
 
-  const bgStyle = { backgroundColor: bgConfig.color };
+  const bgStyle = { backgroundColor: appearanceConfig.color };
 
   return (
     <>
@@ -618,7 +618,7 @@ export default function Clock() {
       <div className="fixed inset-0 -z-10 transition-colors duration-500" style={bgStyle} />
 
       {showBgSettings && (
-        <BgSettingsModal config={bgConfig} onSave={saveBgConfig} onClose={() => setShowBgSettings(false)} />
+        <BgSettingsModal config={appearanceConfig} onSave={saveAppearanceConfig} onClose={() => setShowBgSettings(false)} />
       )}
       {showPicker && (
         <ZonePicker current={zone} onSave={saveZone} onClose={() => setShowPicker(false)} />
@@ -647,7 +647,7 @@ export default function Clock() {
           onPlayToggle={toggleQuranPlay}
           onSurahSelect={loadSurah}
           onClose={() => setShowQuranModal(false)}
-          quranFont={bgConfig.quranFont}
+          quranFont={appearanceConfig.quranFont}
         />
       )}
       {showRestConfig && (
@@ -673,14 +673,14 @@ export default function Clock() {
         />
       )}
 
-      <div className="relative flex flex-col w-full h-full" style={{ "--fc": hexToRgbStr(bgConfig.fontColor ?? "#ffffff"), color: "rgb(var(--fc))", fontFamily: `var(--font-${bgConfig.fontFamily ?? "montserrat"})` } as React.CSSProperties}>
+      <div className="relative flex flex-col w-full h-full" style={{ "--fc": hexToRgbStr(appearanceConfig.fontColor ?? "#ffffff"), color: "rgb(var(--fc))", fontFamily: `var(--font-${appearanceConfig.fontFamily ?? "montserrat"})` } as React.CSSProperties}>
         {showVerseModal && verseData && (
           <VerseModal
             verse={verseData}
             verseNo={verseNo}
             onNext={nextVerse}
             onClose={() => setShowVerseModal(false)}
-            quranFont={bgConfig.quranFont}
+            quranFont={appearanceConfig.quranFont}
           />
         )}
         {showQuoteModal && dailyQuote && (
@@ -689,7 +689,7 @@ export default function Clock() {
 
         {/* Top bar */}
         <div className="flex items-center gap-3 w-full pt-4 px-4">
-          {bgConfig.showQuran !== false ? (
+          {appearanceConfig.showQuran !== false ? (
             <button
               onClick={() => setShowVerseModal(true)}
               disabled={!verseData}
@@ -699,7 +699,7 @@ export default function Clock() {
                 {verseLoading ? "Loading…" : verseData ? `${verseData.surah.englishName} · ${verseData.numberInSurah} — ${verseData.text}` : ""}
               </span>
             </button>
-          ) : (bgConfig.showDailyQuote && dailyQuote) ? (
+          ) : (appearanceConfig.showDailyQuote && dailyQuote) ? (
             <button onClick={() => setShowQuoteModal(true)} className="min-w-0 text-left max-w-[75vw]">
               <span className="block truncate text-[11px] fc-70 tracking-[0.1em]">
                 &ldquo;{dailyQuote.q}&rdquo;<span className="fc-25"> &mdash; {dailyQuote.a}</span>
@@ -718,7 +718,7 @@ export default function Clock() {
           </button>
         </div>
 
-        {bgConfig.showQuran !== false && bgConfig.showDailyQuote && dailyQuote && (
+        {appearanceConfig.showQuran !== false && appearanceConfig.showDailyQuote && dailyQuote && (
           <button onClick={() => setShowQuoteModal(true)} className="w-full pl-4 pb-1 text-left">
             <span className="block truncate text-[11px] fc-70 tracking-[0.1em]">
               &ldquo;{dailyQuote.q}&rdquo;<span className="fc-25"> &mdash; {dailyQuote.a}</span>
@@ -728,7 +728,7 @@ export default function Clock() {
 
         <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
           {/* Weather Widget */}
-          {bgConfig.showWeather !== false && (
+          {appearanceConfig.showWeather !== false && (
             <div onDoubleClick={() => setShowLocPicker(true)} className="w-full flex items-center flex-wrap justify-center gap-x-3 gap-y-1 cursor-pointer">
               {weatherData && weatherLoc ? (
                 <>
@@ -751,14 +751,14 @@ export default function Clock() {
             zone={zone}
             onRestConfigOpen={() => setShowRestConfig(true)}
             onZonePickerOpen={() => setShowPicker(true)}
-            showRest={bgConfig.showRest}
-            showPrayers={bgConfig.showPrayers}
-            showHijri={bgConfig.showHijri}
+            showRest={appearanceConfig.showRest}
+            showPrayers={appearanceConfig.showPrayers}
+            showHijri={appearanceConfig.showHijri}
             hijriDate={hijriDate}
           />
 
           {/* Media Player Widget */}
-          {bgConfig.showPlayer !== false && (
+          {appearanceConfig.showPlayer !== false && (
             <div className="w-full flex flex-col items-center gap-2 mt-10 pt-4">
               <button
                 onClick={() => setShowMediaModal(true)}
@@ -785,8 +785,8 @@ export default function Clock() {
           )}
 
           {/* Quran Player Widget */}
-          {bgConfig.showQuranPlayer !== false && (
-            <div className={`w-full flex flex-col items-center gap-2 ${bgConfig.showPlayer !== false ? "mt-2" : "mt-10"}`}>
+          {appearanceConfig.showQuranPlayer !== false && (
+            <div className={`w-full flex flex-col items-center gap-2 ${appearanceConfig.showPlayer !== false ? "mt-2" : "mt-10"}`}>
               <button
                 onClick={() => setShowQuranModal(true)}
                 className="flex items-center gap-3 px-4 py-2 rounded bg-white/[0.03] border-0 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
@@ -805,7 +805,7 @@ export default function Clock() {
                   <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Quran Streaming</p>
                   {currentSurah ? (
                     <>
-                      <p className="text-2xl fc-80 leading-tight my-2" dir="rtl" style={{ fontFamily: bgConfig.quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>{currentSurah.name}</p>
+                      <p className="text-2xl fc-80 leading-tight my-2" dir="rtl" style={{ fontFamily: appearanceConfig.quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>{currentSurah.name}</p>
                       <p className="text-[10px] fc-40 tracking-wide truncate">
                         {currentSurah.englishName}
                         <span className="text-[10px] fc-30 ml-2">· {currentAyahIndex + 1}</span>
@@ -820,7 +820,7 @@ export default function Clock() {
           )}
 
           {/* Reminder Widget */}
-          {bgConfig.showReminder !== false && (
+          {appearanceConfig.showReminder !== false && (
             <div className="w-full mt-6">
               <button
                 onClick={() => setShowReminderModal(true)}
@@ -861,7 +861,7 @@ export default function Clock() {
               onClose={() => setEditingItem(null)}
             />
           )}
-          {bgConfig.showNote !== false && (
+          {appearanceConfig.showNote !== false && (
             <div className="w-full mt-8">
               <button
                 onClick={() => setListOpen((o) => !o)}
@@ -917,7 +917,7 @@ export default function Clock() {
           )}
         </div>
 
-        {bgConfig.showCopyright !== false && (
+        {appearanceConfig.showCopyright !== false && (
           <div className="flex flex-col items-center pb-6 pt-4 gap-1">
             <div className="flex items-center gap-2">
               <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
