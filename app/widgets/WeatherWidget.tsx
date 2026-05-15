@@ -38,6 +38,7 @@ export function WeatherWidget({ show }: Props) {
     return () => clearInterval(id);
   }, [weatherLoc]);
 
+
   const saveWeatherLoc = (loc: WeatherLoc) => {
     setWeatherLoc(loc);
     setWeatherData(null);
@@ -56,7 +57,7 @@ export function WeatherWidget({ show }: Props) {
         />
       )}
       <div
-        onDoubleClick={() => setShowLocPicker(true)}
+        onClick={() => setShowLocPicker(true)}
         className="w-full flex items-center flex-wrap justify-center gap-x-3 gap-y-1 cursor-pointer"
       >
         {weatherData && weatherLoc ? (

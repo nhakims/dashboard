@@ -60,6 +60,24 @@ export const FONTS = [
 
 export type FontId = typeof FONTS[number]["id"];
 
+export type FontSize = "xs" | "sm" | "md" | "lg" | "xl";
+
+export const FONT_SIZES: { id: FontSize; label: string; name: string }[] = [
+  { id: "xs", label: "XS", name: "Extra Small" },
+  { id: "sm", label: "S",  name: "Small"       },
+  { id: "md", label: "M",  name: "Normal"      },
+  { id: "lg", label: "L",  name: "Large"       },
+  { id: "xl", label: "XL", name: "Extra Large" },
+];
+
+export const FONT_SCALE: Record<FontSize, number> = {
+  xs: 0.80,
+  sm: 0.90,
+  md: 1.00,
+  lg: 1.15,
+  xl: 1.30,
+};
+
 export type BgConfig = {
   color: string;
   fontColor: string;
@@ -76,6 +94,7 @@ export type BgConfig = {
   showHijri: boolean;
   quranFont: "naskh" | "kitab";
   fontFamily: FontId;
+  fontSize: FontSize;
 };
 
 export const DEFAULT_BG: BgConfig = {
@@ -94,6 +113,7 @@ export const DEFAULT_BG: BgConfig = {
   showHijri: false,
   quranFont: "naskh",
   fontFamily: "montserrat",
+  fontSize: "md",
 };
 
 export function getWeatherInfo(code: number): { label: string; kind: "sun" | "partly" | "cloud" | "rain" | "snow" | "storm" | "fog" } {

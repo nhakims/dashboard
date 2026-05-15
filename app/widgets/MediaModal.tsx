@@ -103,7 +103,15 @@ export function MediaModal({
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-[200px] scrollbar-thin">
-          <div className="p-4 flex flex-col gap-1">
+          <div className="flex items-center justify-end px-4 pt-3 pb-1">
+            <button
+              onClick={() => setShowSources(true)}
+              className="text-[10px] tracking-[0.2em] text-red-400/70 hover:text-red-400 transition-colors capitalize"
+            >
+              Find Music
+            </button>
+          </div>
+          <div className="px-4 pb-4 flex flex-col gap-1">
             {tracks.map((track) => (
               <div
                 key={track.id}
@@ -138,19 +146,13 @@ export function MediaModal({
           />
           <button
             onClick={onClose}
-            className="flex-1 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+            className="flex-1 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize"
           >
             Close
           </button>
           <button
-            onClick={() => setShowSources(true)}
-            className="flex-1 py-2 text-xs tracking-[0.2em] text-white/70 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
-          >
-            Find Music
-          </button>
-          <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
+            className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors capitalize"
           >
             Upload
           </button>

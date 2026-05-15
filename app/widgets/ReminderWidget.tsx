@@ -67,12 +67,12 @@ export function ReminderWidget({ show }: Props) {
                 <div
                   key={r.id}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
-                    alert ? "bg-red-500/[0.07] border border-red-500/20" : "bg-white/[0.015]"
+                    alert ? "bg-red-500/[0.07] border border-red-500/20" : "bg-white/[0.015] border border-white/8"
                   }`}
                 >
-                  <span className={`text-[10px] tracking-[0.2em] tabular-nums font-medium shrink-0 ${alert ? "text-red-400/70" : "fc-25"}`}>{r.time}</span>
-                  <span className={`text-[11px] tracking-[0.08em] truncate flex-1 ${alert ? "text-red-300/80" : "fc-40"}`}>{r.text}</span>
-                  {dateLabel && <span className={`text-[10px] tracking-[0.1em] shrink-0 ${alert ? "text-red-400/40" : "fc-15"}`}>{dateLabel}</span>}
+                  <span className={`text-[10px] tracking-[0.2em] tabular-nums font-medium shrink-0 ${alert ? "text-red-400/70" : "fc-60"}`}>{r.time}</span>
+                  <span className={`text-[11px] tracking-[0.08em] truncate flex-1 ${alert ? "text-red-300/80" : "fc-70"}`}>{r.text}</span>
+                  {dateLabel && <span className={`text-[10px] tracking-[0.1em] shrink-0 ${alert ? "text-red-400/40" : "fc-45"}`}>{dateLabel}</span>}
                 </div>
               );
             })

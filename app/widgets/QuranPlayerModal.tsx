@@ -124,10 +124,21 @@ export function QuranPlayerModal({
           </div>
         </div>
 
+        <div className="px-5 py-3 border-t border-white/5 flex flex-col gap-0.5 text-center">
+          <p className="text-[9px] tracking-[0.15em] text-white/30 leading-relaxed">
+            Recitation by <span className="text-white/45">Sheikh Mishary Rashid Alafasy</span>
+          </p>
+          <p className="text-[9px] tracking-[0.12em] text-white/20 leading-relaxed">
+            Audio sourced via{" "}
+            <span className="text-white/30">alquran.cloud</span>
+            {" "}· All rights reserved by the respective owner
+          </p>
+        </div>
+
         <div className="flex gap-2 px-5 py-4 border-t border-white/5">
           <button
             onClick={onClose}
-            className="w-full py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+            className="w-full py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize"
           >
             Close
           </button>

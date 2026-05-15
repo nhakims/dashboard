@@ -12,6 +12,9 @@ export function TermsModal({ onAccept }: { onAccept: () => void }) {
               Prayer times, weather data, and Quran content are fetched from third-party services and may occasionally differ from official sources.
             </p>
             <p className="text-[10px] tracking-[0.06em] text-white/65 leading-relaxed">
+              This app uses your browser&apos;s local storage and IndexedDB to save your settings, reminders, tasks, and uploaded media files. No data is transmitted to any server.
+            </p>
+            <p className="text-[10px] tracking-[0.06em] text-white/65 leading-relaxed">
               Your continued use of this app is taken as your acceptance of these terms.
             </p>
           </div>
@@ -36,7 +39,7 @@ export function TermsModal({ onAccept }: { onAccept: () => void }) {
         <div className="px-6 pb-6">
           <button
             onClick={onAccept}
-            className="w-full py-2.5 text-xs tracking-[0.25em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
+            className="w-full py-2.5 text-xs tracking-[0.25em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors capitalize"
           >
             Agree
           </button>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { BgConfig, FontId } from "./types";
-import { FONTS } from "./types";
+import type { BgConfig, FontId, FontSize } from "./types";
+import { FONTS, FONT_SIZES } from "./types";
 
 const ALL_WIDGET_KEYS = ["quran", "quote", "weather", "clock", "hijri", "rest", "prayers", "player", "quranPlayer", "reminder", "tasks"];
 
@@ -40,6 +40,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
   const [showHijri, setShowHijri] = useState(config.showHijri ?? false);
   const [quranFont, setQuranFont] = useState<"naskh" | "kitab">(config.quranFont ?? "naskh");
   const [fontFamily, setFontFamily] = useState<FontId>(config.fontFamily ?? "montserrat");
+  const [fontSize, setFontSize] = useState<FontSize>(config.fontSize ?? "md");
 
   const [openSection, setOpenSection] = useState<"bg" | "font" | "fontFamily" | "widget" | null>(null);
   const toggleSection = (s: "bg" | "font" | "fontFamily" | "widget") => setOpenSection((v) => (v === s ? null : s));
@@ -60,7 +61,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
   }, [onClose]);
 
   const submit = () => {
-    onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showReminder, showRest, showPrayers, showHijri, quranFont, fontFamily });
+    onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showReminder, showRest, showPrayers, showHijri, quranFont, fontFamily, fontSize });
     onClose();
   };
 
@@ -74,7 +75,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
     hijri:       { label: "Hijri Date",   val: showHijri,       setter: setShowHijri },
     player:      { label: "Media Player", val: showPlayer,      setter: setShowPlayer },
     quranPlayer: { label: "Quran Player", val: showQuranPlayer, setter: setShowQuranPlayer },
-    reminder:    { label: "Reminders",    val: showReminder,    setter: setShowReminder },
+reminder:    { label: "Reminders",    val: showReminder,    setter: setShowReminder },
     copyright:   { label: "Copyright",   val: showCopyright,   setter: setShowCopyright },
   };
 
@@ -143,6 +144,27 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
           </button>
           {openFontFamily && (
             <div className="flex flex-col">
+              <div className="px-5 pt-1 pb-4">
+                <div className="flex gap-1.5">
+                  {FONT_SIZES.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setFontSize(f.id)}
+                      title={f.name}
+                      className={`flex-1 flex flex-col items-center justify-center py-3 rounded-lg border transition-colors ${
+                        fontSize === f.id
+                          ? "border-white/30 bg-white/10"
+                          : "border-white/8 hover:border-white/20 hover:bg-white/5"
+                      }`}
+                    >
+                      <span className="text-[8px] tracking-[0.1em] text-white/35 uppercase">{f.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-white/5" />
+
               <button
                 onClick={() => toggleFontSub("family")}
                 className="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors"
@@ -180,7 +202,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
                     <button
                       key={f}
                       onClick={() => setQuranFont(f)}
-                      className={`px-2.5 py-1 text-[10px] tracking-[0.15em] rounded border transition-colors uppercase ${quranFont === f ? "border-white/30 text-white/85 bg-white/10" : "border-white/10 text-white/50 hover:text-white/70"}`}
+                      className={`px-2.5 py-1 text-[10px] tracking-[0.15em] rounded border transition-colors capitalize ${quranFont === f ? "border-white/30 text-white/85 bg-white/10" : "border-white/10 text-white/50 hover:text-white/70"}`}
                     >
                       {f}
                     </button>
@@ -224,7 +246,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
                   </div>
                 );
               })}
-              <div className="border-t border-white/5 mt-1 pt-3 flex items-center justify-between py-2.5 rounded-lg px-2">
+              <div className="flex items-center justify-between py-2.5 rounded-lg px-2">
                 <p className="text-[10px] tracking-[0.25em] text-white/50 uppercase">Copyright</p>
                 <button
                   onClick={() => setShowCopyright((v) => !v)}
@@ -238,8 +260,8 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
         </div>
 
         <div className="shrink-0 flex gap-2 px-5 py-4 border-t border-white/5">
-          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase">Cancel</button>
-          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase">Save</button>
+          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize">Cancel</button>
+          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors capitalize">Save</button>
         </div>
       </div>
     </div>

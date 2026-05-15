@@ -16,6 +16,7 @@ export function LocationPickerModal({
   const [results, setResults] = useState<WeatherLoc[]>([]);
   const [searching, setSearching] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,15 +50,29 @@ export function LocationPickerModal({
   }, [query]);
 
   const useCurrentLocation = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setGeoError("Geolocation is not supported by your browser.");
+      return;
+    }
     setGeoLoading(true);
+    setGeoError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         onSave({ name: "My Location", lat: pos.coords.latitude, lon: pos.coords.longitude });
         setGeoLoading(false);
         onClose();
       },
-      () => setGeoLoading(false)
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoError("Location access denied. Allow it in your browser settings.");
+        } else if (err.code === err.TIMEOUT) {
+          setGeoError("Location request timed out. Try searching instead.");
+        } else {
+          setGeoError("Unable to get your location. Try searching instead.");
+        }
+      },
+      { timeout: 8000, maximumAge: 60000 }
     );
   };
 
@@ -86,6 +101,10 @@ export function LocationPickerModal({
             {geoLoading ? "Locating…" : "Use current location"}
           </span>
         </button>
+
+        {geoError && (
+          <p className="px-5 py-2.5 text-[10px] tracking-[0.1em] text-red-400/70 border-b border-white/5 leading-relaxed">{geoError}</p>
+        )}
 
         <div className="px-5 py-3 border-b border-white/5">
           <input
@@ -121,7 +140,7 @@ export function LocationPickerModal({
         <div className="px-5 py-4 border-t border-white/5">
           <button
             onClick={onClose}
-            className="w-full py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors uppercase"
+            className="w-full py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize"
           >
             Cancel
           </button>

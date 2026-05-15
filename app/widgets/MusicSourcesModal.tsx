@@ -46,9 +46,12 @@ export function MusicSourcesModal({ onClose }: { onClose: () => void }) {
             </a>
           ))}
         </div>
-        <div className="px-5 pb-5">
+        <div className="px-5 pb-5 flex flex-col gap-2">
           <p className="text-[9px] tracking-[0.15em] text-white/35 text-center leading-relaxed">
             Please respect the creators&apos; talent and work — read each platform&apos;s licensing terms before use.
+          </p>
+          <p className="text-[9px] tracking-[0.15em] text-white/25 text-center leading-relaxed">
+            If you enjoy the music, consider supporting the creator directly — follow, share, or purchase their work where possible.
           </p>
         </div>
       </div>

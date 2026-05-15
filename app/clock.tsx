@@ -15,10 +15,11 @@ import { WeatherWidget } from "./widgets/WeatherWidget";
 import { ZonePicker } from "./widgets/ZonePicker";
 import {
   DEFAULT_BG,
+  FONT_SCALE,
   hexToRgbStr,
   type BgConfig,
   type PrayerTimes,
-} from "./widgets/types"; 
+} from "./widgets/types";
 
 export default function Clock() {
   const [zone, setZone] = useState("WLY01");
@@ -229,7 +230,7 @@ export default function Clock() {
           </button>
         )}
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 select-none max-w-2xl w-full mx-auto px-4 sm:px-6" style={{ zoom: FONT_SCALE[appearanceConfig.fontSize ?? "md"] }}>
           <WeatherWidget show={appearanceConfig.showWeather !== false} />
 
           <ClockFace
@@ -256,6 +257,7 @@ export default function Clock() {
             show={appearanceConfig.showQuranPlayer !== false}
             quranFont={appearanceConfig.quranFont}
             showPlayerAbove={appearanceConfig.showPlayer !== false}
+            fontScale={FONT_SCALE[appearanceConfig.fontSize ?? "md"]}
             onPlayStart={pauseMedia}
           />
 
