@@ -48,7 +48,7 @@ export function QuranVerseDetailModal({
       style={{ zoom: counterZoom }}
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full max-w-[320px] bg-[#111] border border-white/8 rounded-xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-lg bg-[#111] border border-white/8 rounded-xl overflow-hidden flex flex-col">
 
         <div className="flex items-start justify-between px-5 py-4 border-b border-white/5">
           <div className="flex-1 flex flex-col items-center gap-1 text-center">

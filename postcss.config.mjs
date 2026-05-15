@@ -1,12 +1,5 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-
-const config = {
+export default {
   plugins: {
-    "@tailwindcss/postcss": {
-      base: dirname(fileURLToPath(import.meta.url)),
-    },
+    "@tailwindcss/postcss": {},
   },
 };
-
-export default config;
