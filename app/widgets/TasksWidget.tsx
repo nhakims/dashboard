@@ -58,7 +58,7 @@ export function TasksWidget({ show }: Props) {
           onClose={() => setEditingItem(null)}
         />
       )}
-      <div className="w-full mt-8">
+      <div className="w-full">
         <button
           onClick={() => setListOpen((o) => !o)}
           className="flex items-center justify-center w-full fc-25 hover:fc-40 transition-colors mb-2"

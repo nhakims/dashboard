@@ -185,7 +185,7 @@ export const QuranPlayerWidget = forwardRef<QuranPlayerHandle, Props>(function Q
           quranFont={quranFont}
         />
       )}
-      <div className={`w-full flex flex-col items-center gap-2 ${showPlayerAbove ? "mt-2" : "mt-10"}`}>
+      <div className="w-full flex flex-col items-center gap-2">
         <button
           onClick={() => setShowQuranModal(true)}
           className="flex items-center gap-3 px-4 py-2 rounded bg-white/[0.03] border-0 hover:bg-white/[0.06] transition-all group max-w-xs w-full"

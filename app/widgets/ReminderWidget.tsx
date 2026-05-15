@@ -55,7 +55,7 @@ export function ReminderWidget({ show }: Props) {
           onClose={() => setShowReminderModal(false)}
         />
       )}
-      <div className="w-full mt-6">
+      <div className="w-full">
         <button onClick={() => setShowReminderModal(true)} className="w-full flex flex-col gap-1.5">
           {nearestReminders.length === 0 ? (
             <p className="text-center text-[10px] tracking-[0.25em] fc-15 uppercase py-1">No upcoming reminders</p>

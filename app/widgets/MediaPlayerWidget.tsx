@@ -251,7 +251,7 @@ export const MediaPlayerWidget = forwardRef<MediaPlayerHandle, Props>(function M
           onClose={() => setShowMediaModal(false)}
         />
       )}
-      <div className="w-full flex flex-col items-center gap-2 mt-10 pt-4">
+      <div className="w-full flex flex-col items-center gap-2">
         <button
           onClick={() => setShowMediaModal(true)}
           className="flex items-center gap-3 px-4 py-2 rounded rounded-1 bg-white/[0.03] border-0 hover:bg-white/[0.06] transition-all group max-w-xs w-full"

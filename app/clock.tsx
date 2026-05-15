@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BgSettingsModal } from "./widgets/AppearanceSettingModal";
+import { AppearanceSettingsModal } from "./widgets/AppearanceSettingModal";
 import { ClockFace } from "./widgets/ClockFace";
 import { MediaPlayerHandle, MediaPlayerWidget } from "./widgets/MediaPlayerWidget";
 import { QuoteModal } from "./widgets/QuoteModal";
@@ -162,7 +162,7 @@ export default function Clock() {
       <div className="fixed inset-0 -z-10 transition-colors duration-500" style={bgStyle} />
 
       {showBgSettings && (
-        <BgSettingsModal config={appearanceConfig} onSave={saveAppearanceConfig} onClose={() => setShowBgSettings(false)} />
+        <AppearanceSettingsModal config={appearanceConfig} onSave={saveAppearanceConfig} onClose={() => setShowBgSettings(false)} />
       )}
       {showPicker && (
         <ZonePicker current={zone} onSave={saveZone} onClose={() => setShowPicker(false)} />
