@@ -36,10 +36,10 @@ export function TermsModal({ onAccept }: { onAccept: () => void }) {
             ))}
           </ul>
         </div>
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 flex justify-center">
           <button
             onClick={onAccept}
-            className="w-full py-2.5 text-xs tracking-[0.25em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors capitalize"
+            className="px-6 py-1.5 text-[10px] tracking-[0.25em] text-green-400 font-bold bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors uppercase"
           >
             Agree
           </button>
