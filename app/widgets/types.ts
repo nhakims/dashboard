@@ -42,7 +42,24 @@ export const ZONES = [
 export type PrayerTimes = Partial<Record<PrayerKey, string>>;
 export type WeatherLoc = { name: string; lat: number; lon: number };
 export type WeatherData = { temp: number; code: number };
-export type Reminder = { id: string; text: string; date: string; time: string };
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "yearly";
+export type Reminder = { id: string; text: string; date: string; time: string; recurrence?: RecurrenceType };
+
+export function getNextOccurrence(r: Reminder, thresholdMs: number): { date: string; datetimeMs: number } {
+  let dt = new Date(`${r.date}T${r.time}`);
+  if (!r.recurrence || r.recurrence === "none") {
+    return { date: r.date, datetimeMs: dt.getTime() };
+  }
+  while (dt.getTime() < thresholdMs) {
+    switch (r.recurrence) {
+      case "daily":   dt.setDate(dt.getDate() + 1); break;
+      case "weekly":  dt.setDate(dt.getDate() + 7); break;
+      case "monthly": dt.setMonth(dt.getMonth() + 1); break;
+      case "yearly":  dt.setFullYear(dt.getFullYear() + 1); break;
+    }
+  }
+  return { date: dt.toISOString().slice(0, 10), datetimeMs: dt.getTime() };
+}
 export type GeoResult = { name: string; country: string; admin1?: string; latitude: number; longitude: number };
 
 export const FONTS = [

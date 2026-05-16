@@ -8,7 +8,7 @@ import { QuoteModal } from "./widgets/QuoteModal";
 import { QuranPlayerHandle, QuranPlayerWidget } from "./widgets/QuranPlayerWidget";
 import { ReminderWidget } from "./widgets/ReminderWidget";
 import { ReminderAlert } from "./widgets/ReminderAlert";
-import { type Reminder } from "./widgets/types";
+import { type Reminder, getNextOccurrence } from "./widgets/types";
 import { RestConfigModal } from "./widgets/RestConfigModal";
 import { TasksWidget } from "./widgets/TasksWidget";
 import { BookmarksWidget } from "./widgets/BookmarksWidget";
@@ -160,11 +160,13 @@ export default function Clock() {
       const reminders: Reminder[] = JSON.parse(saved);
       const now = Date.now();
       for (const r of reminders) {
-        if (firedReminders.current.has(r.id)) continue;
-        const diff = new Date(`${r.date}T${r.time}`).getTime() - now;
+        const { date: effectiveDate, datetimeMs } = getNextOccurrence(r, now - 60000);
+        const firedKey = `${r.id}-${effectiveDate}`;
+        if (firedReminders.current.has(firedKey)) continue;
+        const diff = datetimeMs - now;
         if (diff <= 0 && diff >= -60000) {
-          firedReminders.current.add(r.id);
-          setReminderAlert(r);
+          firedReminders.current.add(firedKey);
+          setReminderAlert({ ...r, date: effectiveDate });
           break;
         }
       }
