@@ -44,7 +44,7 @@ function AddReminderModal({ onAdd, onClose }: { onAdd: (r: Reminder) => void; on
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
-            placeholder="Reminder text…"
+            placeholder="What you wants to be reminded?"
             className="w-full bg-white/5 rounded-lg px-3 py-2 text-xs tracking-[0.1em] text-white/85 placeholder:text-white/20 outline-none focus:bg-white/8 transition-colors"
           />
           <div className="flex gap-2">
@@ -241,7 +241,7 @@ export function ReminderModal({
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
               </svg>
-              <span className="text-[10px] tracking-[0.2em] uppercase">Add Reminder</span>
+              <span className="text-[10px] tracking-[0.2em]">add reminder</span>
             </button>
           </div>
 

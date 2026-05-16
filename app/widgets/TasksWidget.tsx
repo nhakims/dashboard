@@ -73,6 +73,9 @@ export function TasksWidget({ show }: Props) {
         {listOpen && (
           <div className="w-full flex flex-col gap-1">
             <div className={`flex flex-col gap-1 ${listItems.length > 3 ? "max-h-[calc(3*3.25rem)] overflow-y-auto pr-1" : ""}`}>
+              {listItems.length === 0 && (
+                <p className="text-center text-[10px] tracking-[0.2em] fc-20 py-2">no pending tasks</p>
+              )}
               {listItems.map((item) => (
                 <div
                   key={item.id}
