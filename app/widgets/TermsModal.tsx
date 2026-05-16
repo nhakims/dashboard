@@ -30,8 +30,8 @@ export function TermsModal({ onAccept }: { onAccept: () => void }) {
               ["Vercel", "vercel.com"],
             ].map(([name, url]) => (
               <li key={url} className="flex items-center justify-between">
-                <span className="text-[11px] tracking-[0.1em] text-white/60">{name}</span>
-                <span className="text-[10px] tracking-[0.08em] text-white/35 font-mono">{url}</span>
+                <span className="text-[9px] tracking-[0.1em] text-white/60">{name}</span>
+                <span className="text-[9px] tracking-[0.08em] text-white/35 font-mono">{url}</span>
               </li>
             ))}
           </ul>

@@ -292,11 +292,11 @@ export default function Clock() {
             onPlayStart={pauseMedia}
           />
 
-          <ReminderWidget show={appearanceConfig.showReminder !== false} />
-
-          <TasksWidget show={appearanceConfig.showNote !== false} />
-
-          <BookmarksWidget show={appearanceConfig.showBookmarks === true} />
+          <div className={`w-full flex flex-col gap-4${appearanceConfig.showQuranPlayer === false ? " mt-8" : ""}`}>
+            <ReminderWidget show={appearanceConfig.showReminder !== false} />
+            <TasksWidget show={appearanceConfig.showNote !== false} />
+            <BookmarksWidget show={appearanceConfig.showBookmarks === true} />
+          </div>
         </div>
 
         {appearanceConfig.showCopyright !== false && (

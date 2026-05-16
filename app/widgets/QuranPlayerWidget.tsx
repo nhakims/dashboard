@@ -205,6 +205,7 @@ export const QuranPlayerWidget = forwardRef<QuranPlayerHandle, Props>(function Q
           isPlaying={isQuranPlaying}
           onPlayToggle={toggleQuranPlay}
           onSurahSelect={loadSurah}
+          onViewVerse={() => { setShowQuranModal(false); setShowVerseDetail(true); }}
           onClose={() => setShowQuranModal(false)}
           quranFont={quranFont}
         />
@@ -224,6 +225,7 @@ ayahIndex={currentAyahIndex}
           onPlayToggle={toggleQuranPlay}
           onPrev={() => navigateAyah(-1)}
           onNext={() => navigateAyah(1)}
+          onJump={(i) => setCurrentAyahIndex(i)}
           onClose={() => setShowVerseDetail(false)}
         />
       )}

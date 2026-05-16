@@ -9,6 +9,7 @@ export function QuranPlayerModal({
   isPlaying,
   onPlayToggle,
   onSurahSelect,
+  onViewVerse,
   onClose,
   quranFont,
 }: {
@@ -18,6 +19,7 @@ export function QuranPlayerModal({
   isPlaying: boolean;
   onPlayToggle: () => void;
   onSurahSelect: (num: number) => void;
+  onViewVerse: () => void;
   onClose: () => void;
   quranFont?: "naskh" | "kitab";
 }) {
@@ -49,7 +51,7 @@ export function QuranPlayerModal({
             <p className="text-xs tracking-[0.3em] text-white/60 uppercase">Quran Player</p>
             <p className="text-[10px] tracking-[0.2em] text-white/40 mt-0.5">Streaming · Mishary Rashid Alafasy</p>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white/75 text-lg leading-none transition-colors">✕</button>
+          <button onClick={onClose} className="text-white/50 hover:text-white/75 text-sm leading-none transition-colors">✕</button>
         </div>
 
         <div className="px-6 py-8 flex flex-col items-center gap-6 border-b border-white/5 bg-white/[0.02]">
@@ -124,21 +126,23 @@ export function QuranPlayerModal({
           </div>
         </div>
 
-        <div className="px-5 py-3 border-t border-white/5 flex flex-col gap-0.5 text-center">
+        <div className="px-5 py-3 border-t border-white/5 text-center">
           <p className="text-[9px] tracking-[0.15em] text-white/30 leading-relaxed">
             Recitation by <span className="text-white/45">Sheikh Mishary Rashid Alafasy</span>
           </p>
-          <p className="text-[9px] tracking-[0.12em] text-white/20 leading-relaxed">
-            Audio sourced via{" "}
-            <span className="text-white/30">alquran.cloud</span>
-            {" "}· All rights reserved by the respective owner
-          </p>
         </div>
 
-        <div className="flex gap-2 px-5 py-4 border-t border-white/5">
+        <div className="flex items-center justify-center gap-2 px-5 py-4 border-t border-white/5">
+          <button
+            onClick={onViewVerse}
+            disabled={!currentSurah}
+            className="px-5 py-1.5 text-xs tracking-[0.2em] text-white/70 bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 disabled:opacity-30 disabled:cursor-not-allowed transition-colors capitalize"
+          >
+            View Verse
+          </button>
           <button
             onClick={onClose}
-            className="w-full py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize"
+            className="px-5 py-1.5 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize"
           >
             Close
           </button>

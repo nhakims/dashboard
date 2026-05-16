@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function QuranVerseDetailModal({
   surahName,
@@ -16,6 +16,7 @@ export function QuranVerseDetailModal({
   onPlayToggle,
   onPrev,
   onNext,
+  onJump,
   onClose,
 }: {
   surahName: string;
@@ -31,9 +32,13 @@ export function QuranVerseDetailModal({
   onPlayToggle?: () => void;
   onPrev: () => void;
   onNext: () => void;
+  onJump: (index: number) => void;
   onClose: () => void;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const [jumpInput, setJumpInput] = useState("");
+  const [showJump, setShowJump] = useState(false);
+  const jumpRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -44,6 +49,15 @@ export function QuranVerseDetailModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, onPrev, onNext]);
+
+  useEffect(() => {
+    if (showJump) jumpRef.current?.focus();
+  }, [showJump]);
+
+  const commitJump = () => {
+    const n = parseInt(jumpInput);
+    if (n >= 1 && n <= totalAyahs) { onJump(n - 1); setShowJump(false); setJumpInput(""); }
+  };
 
   return (
     <div
@@ -99,8 +113,28 @@ export function QuranVerseDetailModal({
             </svg>
             Prev
           </button>
-          <div className="flex-1 text-center text-[10px] tracking-[0.2em] fc-20 tabular-nums">
-            {ayahIndex + 1} / {totalAyahs}
+          <div className="flex-1 flex justify-center">
+            {showJump ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  ref={jumpRef}
+                  type="number"
+                  min={1}
+                  max={totalAyahs}
+                  value={jumpInput}
+                  onChange={(e) => setJumpInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") commitJump(); if (e.key === "Escape") { setShowJump(false); setJumpInput(""); } }}
+                  placeholder={`1 – ${totalAyahs}`}
+                  className="w-20 px-2 py-1 text-[10px] text-white/80 bg-white/5 border border-white/10 rounded-lg outline-none focus:border-white/25 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button onClick={commitJump} className="px-2.5 py-1 text-[10px] tracking-[0.1em] fc-50 hover:fc-80 bg-white/8 border border-white/8 rounded-lg transition-colors">Go</button>
+                <button onClick={() => { setShowJump(false); setJumpInput(""); }} className="text-[10px] fc-30 hover:fc-60 transition-colors">✕</button>
+              </div>
+            ) : (
+              <button onClick={() => setShowJump(true)} className="text-[10px] tracking-[0.2em] fc-20 tabular-nums hover:fc-50 transition-colors">
+                {ayahIndex + 1} / {totalAyahs}
+              </button>
+            )}
           </div>
           <button
             onClick={onNext}
