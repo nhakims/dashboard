@@ -251,7 +251,7 @@ export const MediaPlayerWidget = forwardRef<MediaPlayerHandle, Props>(function M
           onClose={() => setShowMediaModal(false)}
         />
       )}
-      <div className="w-full flex flex-col items-center gap-2">
+      <div className="w-full flex flex-col items-center gap-2 mt-4">
         <button
           onClick={() => setShowMediaModal(true)}
           className="flex items-center gap-3 px-4 py-2 rounded rounded-1 bg-white/[0.03] border-0 hover:bg-white/[0.06] transition-all group max-w-xs w-full"
@@ -267,7 +267,7 @@ export const MediaPlayerWidget = forwardRef<MediaPlayerHandle, Props>(function M
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-2">Now Playing</p>
+            <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-2">Media Player</p>
             <p className="text-xs fc-60 truncate tracking-[0.15em] uppercase">
               {tracks.find(t => t.id === currentTrackId)?.name || "No track selected"}
             </p>

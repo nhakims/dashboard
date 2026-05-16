@@ -118,7 +118,7 @@ export function ClockFace({
           </span>
         ))}
       </div>
-      <div className="w-1/2 md:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-7 sm:mt-8 2xl:mt-10">
+      <div className="w-1/2 md:w-3/4 h-[3px] bg-white/10 rounded-full overflow-hidden mt-1 sm:mt-2 2xl:mt-10">
         <div className="h-full rounded-full transition-transform duration-1000 ease-linear origin-left" style={{ transform: `scaleX(${secondsPct / 100})`, backgroundColor: 'rgb(var(--fc) / 0.7)' }} />
       </div>
       <div className="flex flex-col items-center gap-1 md:mt-6 xl:mt-6 2xl:mt-10">

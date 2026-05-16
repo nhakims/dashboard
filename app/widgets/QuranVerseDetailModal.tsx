@@ -12,6 +12,8 @@ export function QuranVerseDetailModal({
   translationText,
   quranFont,
   counterZoom,
+  isPlaying,
+  onPlayToggle,
   onPrev,
   onNext,
   onClose,
@@ -25,6 +27,8 @@ export function QuranVerseDetailModal({
   translationText: string | null;
   quranFont?: "naskh" | "kitab";
   counterZoom: number;
+  isPlaying?: boolean;
+  onPlayToggle?: () => void;
   onPrev: () => void;
   onNext: () => void;
   onClose: () => void;
@@ -48,17 +52,26 @@ export function QuranVerseDetailModal({
       style={{ zoom: counterZoom }}
       onClick={(e) => e.target === overlayRef.current && onClose()}
     >
-      <div className="w-full bg-[#111] border border-white/8 rounded-xl overflow-hidden flex flex-col">
+      <div className="w-full lg:w-1/2 bg-[#111] border border-white/8 rounded-xl overflow-hidden flex flex-col">
 
         <div className="flex items-start justify-between px-5 py-4 border-b border-white/5">
-          <div className="flex-1 flex flex-col items-center gap-1 text-center">
+          <div className="flex-1 flex flex-col items-start gap-1">
             <p className="text-xs tracking-[0.25em] text-white/65 uppercase">{surahEnglishName} · {ayahIndex + 1} / {totalAyahs}</p>
             <p className="text-[10px] tracking-[0.15em] text-white/35">{surahNameTranslation}</p>
           </div>
+          {onPlayToggle && (
+            <button onClick={onPlayToggle} className="text-white/50 hover:text-white/75 transition-colors shrink-0 ml-3 mt-0.5">
+              {isPlaying ? (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              ) : (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              )}
+            </button>
+          )}
           <button onClick={onClose} className="text-white/50 hover:text-white/75 text-lg leading-none transition-colors shrink-0 ml-3 mt-0.5">✕</button>
         </div>
 
-        <div className="flex flex-col gap-5 px-6 py-8">
+        <div className="flex flex-col gap-5 px-6 py-8 overflow-y-auto max-h-[60vh]">
           <p
             className="fc-85 leading-loose text-center w-full"
             dir="rtl"

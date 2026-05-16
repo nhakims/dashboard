@@ -93,6 +93,8 @@ export const QuranPlayerWidget = forwardRef<QuranPlayerHandle, Props>(function Q
     if (savedSurahNum) {
       const savedAyah = parseInt(localStorage.getItem("current-ayah-index") ?? "0");
       loadSurah(Number(savedSurahNum), false, isNaN(savedAyah) ? 0 : savedAyah);
+    } else {
+      loadSurah(1, false, 0);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -218,12 +220,14 @@ ayahIndex={currentAyahIndex}
           translationText={translationText ?? null}
           quranFont={quranFont}
           counterZoom={1 / fontScale}
+          isPlaying={isQuranPlaying}
+          onPlayToggle={toggleQuranPlay}
           onPrev={() => navigateAyah(-1)}
           onNext={() => navigateAyah(1)}
           onClose={() => setShowVerseDetail(false)}
         />
       )}
-      <div className="w-full flex flex-col items-center gap-2">
+      <div className={`w-full flex flex-col items-center gap-2${showPlayerAbove ? "" : " mt-4"}`}>
         <div
           onClick={() => setShowQuranModal(true)}
           className="flex items-center gap-3 px-4 py-2 rounded bg-white/[0.03] hover:bg-white/[0.06] transition-all group max-w-xs w-full cursor-pointer"
@@ -239,7 +243,7 @@ ayahIndex={currentAyahIndex}
             )}
           </button>
           <div className="min-w-0 flex-1 text-center">
-            <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Quran Streaming</p>
+            <p className="text-[10px] tracking-[0.2em] fc-30 uppercase mb-0.5">Quran Player</p>
             {currentSurah ? (
               <>
                 <p className="text-2xl fc-80 leading-tight my-2 text-center" dir="rtl" style={{ fontFamily: quranFont === "kitab" ? "Kitab" : "var(--font-arabic)" }}>{currentSurah.name}</p>
