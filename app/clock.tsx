@@ -270,7 +270,7 @@ export default function Clock() {
           <div className="flex flex-col items-center pb-6 pt-4 gap-1">
             <div className="flex items-center gap-2">
               <a href="https://hakim.my" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.25em] fc-70 hover:fc-35 uppercase transition-colors">&copy; 2026 &bull; Hakim Samah &bull; Dashboard</a>
-              <button onClick={() => setShowTerms(true)} className="text-[10px] tracking-[0.2em] fc-25 hover:fc-50 uppercase transition-colors">· Terms</button>
+              <button onClick={() => setShowTerms(true)} className="text-[10px] tracking-[0.2em] text-red-400/70 hover:text-red-400 uppercase transition-colors">· Terms</button>
             </div>
             {userIp && <span className="text-[9px] font-thin tracking-[0.2em] fc-25">{userIp}</span>}
           </div>
