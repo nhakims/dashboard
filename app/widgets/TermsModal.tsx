@@ -36,6 +36,33 @@ export function TermsModal({ onAccept }: { onAccept: () => void }) {
             ))}
           </ul>
         </div>
+        <div className="px-6 pb-4">
+          <p className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-2">Fonts</p>
+          <ul className="flex flex-col gap-1">
+            {[
+              ["Montserrat", null],
+              ["Noto Naskh Arabic", null],
+              ["Kitab (AlQuran Cloud)", "https://alquran.cloud"],
+              ["Inter", null],
+              ["Roboto", null],
+              ["Poppins", null],
+              ["Raleway", null],
+              ["Nunito", null],
+              ["Playfair Display", null],
+              ["Lato", null],
+              ["Oswald", null],
+              ["DM Sans", null],
+            ].map(([name, url]) => (
+              <li key={name} className="flex items-center justify-between">
+                <span className="text-[9px] tracking-[0.1em] text-white/60">{name}</span>
+                {url
+                  ? <a href={url} target="_blank" rel="noopener noreferrer" className="text-[9px] tracking-[0.08em] text-white/35 font-mono hover:text-white/60 transition-colors">alquran.cloud</a>
+                  : <span className="text-[9px] tracking-[0.08em] text-white/35 font-mono">fonts.google.com</span>
+                }
+              </li>
+            ))}
+          </ul>
+        </div>
         <div className="px-6 pb-6 flex justify-center">
           <button
             onClick={onAccept}
