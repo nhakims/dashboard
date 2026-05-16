@@ -170,7 +170,7 @@ export default function Clock() {
       }
     };
     check();
-    const id = setInterval(check, 30000);
+    const id = setInterval(check, 5000);
     return () => clearInterval(id);
   }, []);
 
