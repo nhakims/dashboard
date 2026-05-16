@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { BgConfig, FontId, FontSize } from "./types";
 import { FONTS, FONT_SIZES } from "./types";
 
-const ALL_WIDGET_KEYS = ["quran", "quote", "weather", "clock", "hijri", "rest", "prayers", "player", "quranPlayer", "reminder", "tasks"];
+const ALL_WIDGET_KEYS = ["quran", "quote", "weather", "clock", "hijri", "rest", "prayers", "player", "quranPlayer", "reminder", "tasks", "bookmarks"];
 
 function ColorSection({ label, value, onChange, presets }: { label: string; value: string; onChange: (v: string) => void; presets: string[] }) {
   return (
@@ -38,6 +38,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
   const [showRest, setShowRest] = useState(config.showRest ?? true);
   const [showPrayers, setShowPrayers] = useState(config.showPrayers ?? true);
   const [showHijri, setShowHijri] = useState(config.showHijri ?? false);
+  const [showBookmarks, setShowBookmarks] = useState(config.showBookmarks ?? false);
   const [quranFont, setQuranFont] = useState<"naskh" | "kitab">(config.quranFont ?? "naskh");
   const [fontFamily, setFontFamily] = useState<FontId>(config.fontFamily ?? "montserrat");
   const [fontSize, setFontSize] = useState<FontSize>(config.fontSize ?? "md");
@@ -61,7 +62,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
   }, [onClose]);
 
   const submit = () => {
-    onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showReminder, showRest, showPrayers, showHijri, quranFont, fontFamily, fontSize });
+    onSave({ color, fontColor, showQuran, showDailyQuote, showWeather, showCopyright, showNote, showPlayer, showQuranPlayer, showReminder, showRest, showPrayers, showHijri, showBookmarks, quranFont, fontFamily, fontSize });
     onClose();
   };
 
@@ -76,6 +77,7 @@ export function AppearanceSettingsModal({ config, onSave, onClose }: { config: B
     player:      { label: "Media Player", val: showPlayer,      setter: setShowPlayer },
     quranPlayer: { label: "Quran Player", val: showQuranPlayer, setter: setShowQuranPlayer },
 reminder:    { label: "Reminders",    val: showReminder,    setter: setShowReminder },
+    bookmarks:   { label: "Bookmarks",   val: showBookmarks,   setter: setShowBookmarks },
     copyright:   { label: "Copyright",   val: showCopyright,   setter: setShowCopyright },
   };
 
@@ -259,9 +261,9 @@ reminder:    { label: "Reminders",    val: showReminder,    setter: setShowRemin
           )}
         </div>
 
-        <div className="shrink-0 flex gap-2 px-5 py-4 border-t border-white/5">
-          <button onClick={onClose} className="flex-1 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize">Cancel</button>
-          <button onClick={submit} className="flex-1 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors capitalize">Save</button>
+        <div className="shrink-0 flex gap-2 justify-end px-5 py-4 border-t border-white/5">
+          <button onClick={onClose} className="px-5 py-2 text-xs tracking-[0.2em] text-white/50 border border-white/5 rounded-lg hover:bg-white/5 transition-colors capitalize">Cancel</button>
+          <button onClick={submit} className="px-5 py-2 text-xs tracking-[0.2em] text-white bg-white/10 border border-white/8 rounded-lg hover:bg-white/15 transition-colors capitalize">Save</button>
         </div>
       </div>
     </div>

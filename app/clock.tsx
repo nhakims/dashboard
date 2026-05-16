@@ -7,8 +7,11 @@ import { MediaPlayerHandle, MediaPlayerWidget } from "./widgets/MediaPlayerWidge
 import { QuoteModal } from "./widgets/QuoteModal";
 import { QuranPlayerHandle, QuranPlayerWidget } from "./widgets/QuranPlayerWidget";
 import { ReminderWidget } from "./widgets/ReminderWidget";
+import { ReminderAlert } from "./widgets/ReminderAlert";
+import { type Reminder } from "./widgets/types";
 import { RestConfigModal } from "./widgets/RestConfigModal";
 import { TasksWidget } from "./widgets/TasksWidget";
+import { BookmarksWidget } from "./widgets/BookmarksWidget";
 import { TermsModal } from "./widgets/TermsModal";
 import { VerseModal } from "./widgets/VerseModal";
 import { WeatherWidget } from "./widgets/WeatherWidget";
@@ -39,6 +42,8 @@ export default function Clock() {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [userIp, setUserIp] = useState<string | null>(null);
   const [hijriDate, setHijriDate] = useState<string | null>(null);
+  const [reminderAlert, setReminderAlert] = useState<Reminder | null>(null);
+  const firedReminders = useRef<Set<string>>(new Set());
 
   const mediaPlayerRef = useRef<MediaPlayerHandle>(null);
   const quranPlayerRef = useRef<QuranPlayerHandle>(null);
@@ -148,6 +153,27 @@ export default function Clock() {
     localStorage.setItem("rest-interval", String(interval));
   };
 
+  useEffect(() => {
+    const check = () => {
+      const saved = localStorage.getItem("reminders");
+      if (!saved) return;
+      const reminders: Reminder[] = JSON.parse(saved);
+      const now = Date.now();
+      for (const r of reminders) {
+        if (firedReminders.current.has(r.id)) continue;
+        const diff = new Date(`${r.date}T${r.time}`).getTime() - now;
+        if (diff <= 0 && diff >= -60000) {
+          firedReminders.current.add(r.id);
+          setReminderAlert(r);
+          break;
+        }
+      }
+    };
+    check();
+    const id = setInterval(check, 30000);
+    return () => clearInterval(id);
+  }, []);
+
   const saveZone = (z: string) => {
     setZone(z);
     localStorage.setItem("solat-zone", z);
@@ -157,6 +183,9 @@ export default function Clock() {
 
   return (
     <>
+      {reminderAlert && (
+        <ReminderAlert reminder={reminderAlert} onDismiss={() => setReminderAlert(null)} />
+      )}
       {showTerms && (
         <TermsModal onAccept={() => { localStorage.setItem("terms-accepted", "1"); setShowTerms(false); }} />
       )}
@@ -264,6 +293,8 @@ export default function Clock() {
           <ReminderWidget show={appearanceConfig.showReminder !== false} />
 
           <TasksWidget show={appearanceConfig.showNote !== false} />
+
+          <BookmarksWidget show={appearanceConfig.showBookmarks === true} />
         </div>
 
         {appearanceConfig.showCopyright !== false && (

@@ -92,6 +92,7 @@ export type BgConfig = {
   showRest: boolean;
   showPrayers: boolean;
   showHijri: boolean;
+  showBookmarks: boolean;
   quranFont: "naskh" | "kitab";
   fontFamily: FontId;
   fontSize: FontSize;
@@ -111,6 +112,7 @@ export const DEFAULT_BG: BgConfig = {
   showRest: true,
   showPrayers: true,
   showHijri: false,
+  showBookmarks: false,
   quranFont: "naskh",
   fontFamily: "montserrat",
   fontSize: "md",
